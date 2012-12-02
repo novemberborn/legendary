@@ -1,0 +1,11 @@
+{
+  "name": "legendary",
+  "version": "0.0.0",
+  "description": "Dabbling with promises. It’ll be legendary",
+  "devDependencies": {
+    "promise-aplus-tests": "git+https://github.com/promises-aplus/promises-tests.git#master"
+  },
+  "scripts": {
+    "test": "promises-aplus-tests tests/adapter"
+  }
+}
