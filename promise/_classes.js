@@ -114,19 +114,18 @@ Resolver.prototype.then = function(onFulfilled, onRejected){
 };
 
 Resolver.prototype._resolve = function(state, input){
-  if(this[state]){
+  var hasHandler = this[state];
+  if(hasHandler){
     var isFulfilled;
-    var result;
     try{
-      result = this[state](input);
+      this.result = this[state](input);
       isFulfilled = true;
     }catch(error){
-      result = error;
+      this.result = error;
     }
 
     this.pending = false;
     this.fulfilled = isFulfilled;
-    this.result = result;
   }else if(state === FULFILLED){
     this.pending = false;
     this.fulfilled = true;
@@ -137,7 +136,7 @@ Resolver.prototype._resolve = function(state, input){
   }
 
   var returnedPromise;
-  if(this.fulfilled && isPromise(this.result)){
+  if(hasHandler && this.fulfilled && isPromise(this.result)){
     returnedPromise = this.result;
     if(!this.pendable){
       this.pendable = new Pendable();
