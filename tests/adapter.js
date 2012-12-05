@@ -1,6 +1,6 @@
 "use strict";
 
-var legendary = require("../index");
+var legendary = require("../legendary");
 
 exports.fulfilled = legendary.fulfilled;
 exports.rejected = legendary.rejected;
