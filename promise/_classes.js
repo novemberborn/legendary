@@ -135,6 +135,8 @@ Resolver.prototype._resolve = function(state, input){
     this.result = input;
   }
 
+  this[FULFILLED] = this[REJECTED] = null;
+
   var returnedPromise;
   if(hasHandler && this.fulfilled && isPromise(this.result)){
     returnedPromise = this.result;
