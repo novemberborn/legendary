@@ -2,6 +2,18 @@
   "name": "legendary",
   "version": "0.0.0",
   "description": "Dabbling with promises. It’ll be legendary",
+  "homepage": "https://github.com/novemberborn/legendary",
+  "bugs": {
+    "url": "https://github.com/novemberborn/legendary/issues"
+  },
+  "author": {
+    "name": "Mark Wubben",
+    "url": "http://novemberborn.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/novemberborn/legendary.git"
+  },
   "devDependencies": {
     "promise-aplus-tests": "git+https://github.com/promises-aplus/promises-tests.git#master"
   },
