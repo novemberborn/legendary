@@ -65,7 +65,7 @@ function Pendable(){
 Pendable.prototype = new Promise();
 
 Pendable.prototype.promise = function(){
-  return this.then();
+  return new Promise(this.then);
 };
 
 exports.Resolver = Resolver;
