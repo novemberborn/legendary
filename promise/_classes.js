@@ -37,7 +37,7 @@ function Pendable(){
       pending = null;
     }
     return this;
-  }
+  };
   
   this.reject = function(reason){
     if(pending){
@@ -47,7 +47,7 @@ function Pendable(){
       pending = null;
     }
     return this;
-  }
+  };
 
   this.then = function(onFulfilled, onRejected){
     var resolver = new Resolver(onFulfilled, onRejected);
@@ -59,8 +59,8 @@ function Pendable(){
       enqueue(resolver, REJECTED, rejectionReason);
     }
     return resolver.promise;
-  }
-};
+  };
+}
 
 Pendable.prototype = new Promise();
 
