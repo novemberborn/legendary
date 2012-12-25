@@ -16,7 +16,7 @@
   },
   "main": "legendary",
   "devDependencies": {
-    "promise-aplus-tests": "git+https://github.com/promises-aplus/promises-tests.git#master"
+    "promises-aplus-tests": "~1.0.1"
   },
   "scripts": {
     "test": "promises-aplus-tests tests/adapter"
