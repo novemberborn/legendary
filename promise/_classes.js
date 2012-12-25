@@ -114,7 +114,7 @@ Resolver.prototype.then = function(onFulfilled, onRejected){
 };
 
 Resolver.prototype._resolve = function(state, input){
-  var hasHandler = this[state];
+  var hasHandler = typeof this[state] === "function";
   if(hasHandler){
     var isFulfilled;
     try{
