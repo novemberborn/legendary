@@ -1,14 +1,20 @@
-var Resolver = require("./promise/Resolver"),
-    Pendable = require("./promise/Pendable");
+"use strict";
 
-exports.pending = function(){
-  return new Pendable();
+var Notifier = require("./promise/_Notifier");
+var Resolver = require("./promise/Resolver");
+var Promise = require("./promise/Promise");
+
+exports.Resolver = Resolver;
+exports.Promise = Promise;
+
+exports.defer = function(){
+  return new Resolver(new Promise());
 };
 
 exports.fulfilled = function(value){
-  return new Resolver().fulfill(value).promise;
+  return new Notifier().notifySync(true, value).promise;
 };
 
 exports.rejected = function(reason){
-  return new Resolver().reject(reason).promise;
+  return new Notifier().notifySync(false, reason).promise;
 };
