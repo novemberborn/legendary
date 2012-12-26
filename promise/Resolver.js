@@ -6,7 +6,8 @@ var Promise = require("./Promise");
 function Resolver(promise){
   // Sets up a resolver for the promise.
 
-  this.promise = promise;
+  var resolver = this;
+  resolver.promise = promise;
 
   // List of pending notifiers. It's truthiness indicates the resolver
   // is still pending.
@@ -17,7 +18,7 @@ function Resolver(promise){
   // Stores the fulfillment value or rejection reason.
   var result;
 
-  this.fulfill = function(value){
+  resolver.fulfill = function(value){
     if(pending){
       fulfilled = true;
       result = value;
@@ -29,7 +30,7 @@ function Resolver(promise){
     }
   };
 
-  this.reject = function(reason){
+  resolver.reject = function(reason){
     if(pending){
       result = reason;
 
@@ -40,7 +41,7 @@ function Resolver(promise){
     }
   };
 
-  this.then = function(onFulfilled, onRejected){
+  function then(onFulfilled, onRejected){
     if(typeof onFulfilled !== "function" && typeof onRejected !== "function"){
       // Return the original promise if no handlers are passed.
       return promise;
@@ -53,10 +54,10 @@ function Resolver(promise){
       notifier.notify(fulfilled, result);
     }
     return notifier.promise;
-  };
+  }
+  resolver.then = then;
+  promise.then = then;
 
-  // Fix the `then()` method on the promise.
-  promise.then = this.then;
 }
 
 module.exports = Resolver;

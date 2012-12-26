@@ -41,10 +41,11 @@ function Notifier(onFulfilled, onRejected){
   this.result = null;
   this.returnedPromise = null;
 
-  var self = this;
   // The promise for the return value of the handlers.
   this.promise = new Promise();
+
   // Set up the `then()` method of the notifier.
+  var self = this;
   this.promise.then = function(onFulfilled, onRejected){
     return self._promiseThen(onFulfilled, onRejected);
   };
@@ -62,20 +63,23 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected){
     // We create a resolver for the notifier if `then()` is called while the
     // notifier is pending, or if a handler returned a promise.
 
-    this.resolver = new Resolver(this.promise);
+    var resolver = new Resolver(this.promise);
+
     // Note that from here on out, all calls to `then()` go to the resolver.
-    this._promiseThen = this.resolver.then;
+    this._promiseThen = resolver.then;
 
     if(this.returnedPromise){
       // Forward the resolution of the returned promise to the resolver.
-      this.returnedPromise.then(this.resolver.fulfill, this.resolver.reject);
+      this.returnedPromise.then(resolver.fulfill, resolver.reject);
       // We can remove the reference, since all calls to `then()` will
       // go to the resolver.
       this.returnedPromise = null;
     }
 
+    this.resolver = resolver;
+
     // Add the handlers to the resolver.
-    return this.resolver.then(onFulfilled, onRejected);
+    return resolver.then(onFulfilled, onRejected);
   }
 
   // Set up a new notifier for the handlers that is notified with the
