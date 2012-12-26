@@ -16,9 +16,12 @@
   },
   "main": "legendary",
   "devDependencies": {
-    "promises-aplus-tests": "~1.0.1"
+    "promises-aplus-tests": "~1.0.1",
+    "mocha": ">= 1.7.4",
+    "sinon": ">= 1.5.2",
+    "glob": "~3.1.14"
   },
   "scripts": {
-    "test": "promises-aplus-tests test/adapter"
+    "test": "promises-aplus-tests test/adapter && test/runner.js"
   }
 }

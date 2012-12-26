@@ -23,6 +23,6 @@ function Promise(perform){
 
 module.exports = Promise;
 
-Promise.prototype.then = function(onFulfilled, onRejected){
+Promise.prototype.then = function(onFulfilled, onRejected, onProgress){
   return new Promise();
 };

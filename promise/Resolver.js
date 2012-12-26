@@ -3,6 +3,34 @@
 var Notifier = require("./_Notifier");
 var Promise = require("./Promise");
 
+function emitProgress(pending, value){
+  if(!pending || !pending.length){
+    return new Notifier().notifySync(true, undefined).promise;
+  }
+
+  return new Promise(function(resolver){
+    var remaining = pending.length;
+    function notified(){
+      if(--remaining === 0){
+        resolver.fulfill(undefined);
+      }
+    }
+
+    for(var i = 0, l = remaining; i < l; i++){
+      var result = pending[i].progress(value);
+      if(result){
+        result.then(notified, resolver.reject);
+      }else{
+        remaining--;
+      }
+    }
+
+    if(remaining === 0){
+      resolver.fulfill(undefined);
+    }
+  });
+}
+
 function Resolver(promise){
   // Sets up a resolver for the promise.
 
@@ -41,13 +69,17 @@ function Resolver(promise){
     }
   };
 
-  function then(onFulfilled, onRejected){
-    if(typeof onFulfilled !== "function" && typeof onRejected !== "function"){
+  resolver.progress = function(value){
+    return emitProgress(pending, value);
+  };
+
+  function then(onFulfilled, onRejected, onProgress){
+    if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
       // Return the original promise if no handlers are passed.
       return promise;
     }
 
-    var notifier = new Notifier(onFulfilled, onRejected);
+    var notifier = new Notifier(onFulfilled, onRejected, onProgress);
     if(pending){
       pending.push(notifier);
     }else{
@@ -57,7 +89,6 @@ function Resolver(promise){
   }
   resolver.then = then;
   promise.then = then;
-
 }
 
 module.exports = Resolver;
