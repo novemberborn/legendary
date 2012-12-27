@@ -19,6 +19,6 @@
     "promises-aplus-tests": "~1.0.1"
   },
   "scripts": {
-    "test": "promises-aplus-tests tests/adapter"
+    "test": "promises-aplus-tests test/adapter"
   }
 }
