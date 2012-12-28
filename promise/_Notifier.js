@@ -33,7 +33,7 @@ var STOP_PROGRESS_PROPAGATION = "StopProgressPropagation";
 function Notifier(onFulfilled, onRejected, onProgress){
   // Notifiers are created whenever a `then()` is called. They will invoke
   // the appropriate handler and manage the promise for the return value
-  // of the handlers.
+  // of the callbacks.
 
   this.onFulfilled = onFulfilled;
   this.onRejected = onRejected;
@@ -44,7 +44,7 @@ function Notifier(onFulfilled, onRejected, onProgress){
   this.result = null;
   this.returnedPromise = null;
 
-  // The promise for the return value of the handlers.
+  // The promise for the return value of the callbacks.
   this.promise = new Promise();
 
   // Set up the `then()` method of the notifier.
@@ -58,7 +58,7 @@ module.exports = Notifier;
 
 Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
     if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
-    // Return the original promise if no handlers are passed.
+    // Return the original promise if no callbacks are passed.
     return this.promise;
   }
 
@@ -68,7 +68,9 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
 
     var resolver = new Resolver(this.promise);
 
-    // Note that from here on out, all calls to `then()` go to the resolver.
+    // Note that the resolver has replaced the `then()` method on the
+    // promise. However the methods we set up in our constructor may have
+    // been handed out already. Point our methods to the resolver as well.
     this._promiseThen = resolver.then;
 
     if(this.returnedPromise){
