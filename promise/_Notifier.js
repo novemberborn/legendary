@@ -1,6 +1,7 @@
 "use strict";
 
 var isPromise = require("./is");
+var when = require("./when");
 var Promise = require("./Promise");
 
 var Resolver = function(promise){
@@ -29,6 +30,13 @@ function enqueue(notifier, fulfilled, result){
 }
 
 var STOP_PROGRESS_PROPAGATION = "StopProgressPropagation";
+function stopProgressPropagation(error){
+  if(error && error.name === STOP_PROGRESS_PROPAGATION){
+    return;
+  }
+
+  throw error;
+}
 
 function Notifier(onFulfilled, onRejected, onProgress){
   // Notifiers are created whenever a `then()` is called. They will invoke
@@ -115,7 +123,7 @@ Notifier.prototype.progress = function(value){
     }
   }
 
-  return this.resolver && this.resolver.progress(value);
+  return when(value, this.resolver && this.resolver.progress, stopProgressPropagation);
 };
 
 Notifier.prototype.notify = function(fulfilled, result){

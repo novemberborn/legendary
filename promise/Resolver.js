@@ -2,32 +2,44 @@
 
 var Notifier = require("./_Notifier");
 var Promise = require("./Promise");
+var isPromise = require("./is");
+var when = require("./when");
+
+function undef(){
+  return undefined;
+}
 
 function emitProgress(pending, value){
   if(!pending || !pending.length){
+    if(isPromise(value)){
+      return when(value, undef);
+    }
+
     return new Notifier().notifySync(true, undefined).promise;
   }
 
-  return new Promise(function(resolver){
-    var remaining = pending.length;
-    function notified(){
-      if(--remaining === 0){
+  return when(value, function(value){
+    return new Promise(function(resolver){
+      var remaining = pending.length;
+      function notified(){
+        if(--remaining === 0){
+          resolver.fulfill(undefined);
+        }
+      }
+
+      for(var i = 0, l = remaining; i < l; i++){
+        var result = pending[i].progress(value);
+        if(result){
+          result.then(notified, resolver.reject);
+        }else{
+          remaining--;
+        }
+      }
+
+      if(remaining === 0){
         resolver.fulfill(undefined);
       }
-    }
-
-    for(var i = 0, l = remaining; i < l; i++){
-      var result = pending[i].progress(value);
-      if(result){
-        result.then(notified, resolver.reject);
-      }else{
-        remaining--;
-      }
-    }
-
-    if(remaining === 0){
-      resolver.fulfill(undefined);
-    }
+    });
   });
 }
 
