@@ -3,6 +3,7 @@
 var Notifier = require("./promise/_Notifier");
 var Resolver = require("./promise/Resolver");
 var Promise = require("./promise/Promise");
+var when = require("./promise/when");
 
 exports.Resolver = Resolver;
 exports.Promise = Promise;
@@ -18,3 +19,5 @@ exports.fulfilled = function(value){
 exports.rejected = function(reason){
   return new Notifier().notifySync(false, reason).promise;
 };
+
+exports.when = when;
