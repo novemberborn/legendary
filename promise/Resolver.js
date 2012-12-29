@@ -58,7 +58,7 @@ function Resolver(promise){
   // Stores the fulfillment value or rejection reason.
   var result;
 
-  resolver.fulfill = function(value){
+  function fulfill(value){
     if(pending){
       fulfilled = true;
       result = value;
@@ -68,9 +68,9 @@ function Resolver(promise){
       }
       pending = null;
     }
-  };
+  }
 
-  resolver.reject = function(reason){
+  function reject(reason){
     if(pending){
       result = reason;
 
@@ -79,11 +79,11 @@ function Resolver(promise){
       }
       pending = null;
     }
-  };
+  }
 
-  resolver.progress = function(value){
+  function progress(value){
     return emitProgress(pending, value);
-  };
+  }
 
   function then(onFulfilled, onRejected, onProgress){
     if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
@@ -99,6 +99,11 @@ function Resolver(promise){
     }
     return notifier.promise;
   }
+
+  resolver.fulfill = fulfill;
+  resolver.reject = reject;
+  resolver.progress = progress;
+
   resolver.then = then;
   promise.then = then;
 }

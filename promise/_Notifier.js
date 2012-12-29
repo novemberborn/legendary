@@ -1,8 +1,8 @@
 "use strict";
 
+var Promise = require("./Promise");
 var isPromise = require("./is");
 var when = require("./when");
-var Promise = require("./Promise");
 
 var Resolver = function(promise){
   // Work around circular dependency between Resolver and Notifier.
@@ -39,8 +39,8 @@ function stopProgressPropagation(error){
 }
 
 function Notifier(onFulfilled, onRejected, onProgress){
-  // Notifiers are created whenever a `then()` is called. They will invoke
-  // the appropriate handler and manage the promise for the return value
+  // Notifiers are created whenever a `then` is called. They will invoke
+  // the appropriate callback and manage the promise for the return value
   // of the callbacks.
 
   this.onFulfilled = onFulfilled;
@@ -49,13 +49,15 @@ function Notifier(onFulfilled, onRejected, onProgress){
 
   this.pending = true;
   this.fulfilled = false;
+  // Non-promise result of the callback
   this.result = null;
+  // Promise result of the callback
   this.returnedPromise = null;
 
   // The promise for the return value of the callbacks.
   this.promise = new Promise();
 
-  // Set up the `then()` method of the notifier.
+  // Set up the `then` method of the notifier.
   var self = this;
   this.promise.then = function(onFulfilled, onRejected, onProgress){
     return self._promiseThen(onFulfilled, onRejected, onProgress);
@@ -65,44 +67,44 @@ function Notifier(onFulfilled, onRejected, onProgress){
 module.exports = Notifier;
 
 Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
-    if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
+  if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
     // Return the original promise if no callbacks are passed.
     return this.promise;
   }
 
   if(this.pending && !this.resolver || this.returnedPromise){
-    // We create a resolver for the notifier if `then()` is called while the
-    // notifier is pending, or if a handler returned a promise.
+    // We create a resolver for the notifier if `then` is called while the
+    // notifier is pending, or if a callback returned a promise.
 
     var resolver = new Resolver(this.promise);
 
-    // Note that the resolver has replaced the `then()` method on the
-    // promise. However the methods we set up in our constructor may have
+    // Note that the resolver has replaced the `then` method on
+    // the promise. However the methods we set up in our constructor may have
     // been handed out already. Point our methods to the resolver as well.
     this._promiseThen = resolver.then;
 
     if(this.returnedPromise){
       // Forward the resolution of the returned promise to the resolver.
       this.returnedPromise.then(resolver.fulfill, resolver.reject, resolver.progress);
-      // We can remove the reference, since all calls to `then()` will
-      // go to the resolver.
+      // We can remove the reference, since all calls to `then`
+      // will go to the resolver.
       this.returnedPromise = null;
     }
 
     this.resolver = resolver;
 
-    // Add the handlers to the resolver.
+    // Add the callbacks to the resolver.
     return resolver.then(onFulfilled, onRejected, onProgress);
   }
 
   if(!this.pending && typeof onFulfilled !== "function" && typeof onRejected !== "function"){
-    // Return the original promise if we're no longer pending but no handlers
-    // are passed. If a progress handler happens to be passed it'll never
+    // Return the original promise if we're no longer pending but no callbacks
+    // are passed. If a progress callback happens to be passed it'll never
     // be called anyway.
     return this.promise;
   }
 
-  // Set up a new notifier for the handlers that is notified with the
+  // Set up a new notifier for the callbacks that is notified with the
   // appropriate state in a future turn.
   return enqueue(
     new Notifier(onFulfilled, onRejected),
@@ -132,17 +134,17 @@ Notifier.prototype.notify = function(fulfilled, result){
 };
 
 Notifier.prototype.notifySync = function(fulfilled, result){
-  // Invoke the appropriate handler with the result received from the
+  // Invoke the appropriate callback with the result received from the
   // resolver or promise.
 
-  var handler = fulfilled ? this.onFulfilled : this.onRejected;
-  var hasHandler = typeof handler === "function";
-  var handlerReturnedPromise = false;
+  var callback = fulfilled ? this.onFulfilled : this.onRejected;
+  var hasCallback = typeof callback === "function";
+  var callbackReturnedPromise = false;
 
-  if(hasHandler){
+  if(hasCallback){
     try{
-      result = handler(result);
-      handlerReturnedPromise = isPromise(result);
+      result = callback(result);
+      callbackReturnedPromise = isPromise(result);
       fulfilled = true;
     }catch(error){
       result = error;
@@ -153,11 +155,11 @@ Notifier.prototype.notifySync = function(fulfilled, result){
   this.onFulfilled = this.onRejected = this.onProgress = null;
 
   // At this point `fulfilled` depends on the execution result of
-  // the handler.
+  // the callback.
   this.pending = false;
   this.fulfilled = fulfilled;
 
-  // *After* the handler is invoked, get a reference to a resolver for
+  // *After* the callback is invoked, get a reference to a resolver for
   // the notifier's promise.
   var resolver = this.resolver;
 
@@ -165,7 +167,7 @@ Notifier.prototype.notifySync = function(fulfilled, result){
     // If there is a resolver, make sure it's fulfilled or rejected
     // as appropriate.
 
-    if(handlerReturnedPromise){
+    if(callbackReturnedPromise){
       try{
         result.then(resolver.fulfill, resolver.reject, resolver.progress);
       }catch(error){
@@ -177,9 +179,9 @@ Notifier.prototype.notifySync = function(fulfilled, result){
       resolver.reject(result);
     }
   }else{
-    // Store the execution result such that we can use it if `then()` is
+    // Store the execution result such that we can use it if `then` is
     // called on the notifier's promise.
-    if(handlerReturnedPromise){
+    if(callbackReturnedPromise){
       this.returnedPromise = result;
     }else{
       this.result = result;
