@@ -26,3 +26,19 @@ module.exports = Promise;
 Promise.prototype.then = function(onFulfilled, onRejected, onProgress){
   return new Promise();
 };
+
+Promise.prototype.trace = function(label, meta){
+  return this;
+};
+
+Promise.prototype.traceFulfilled = function(label, meta){
+  return this;
+};
+
+Promise.prototype.traceRejected = function(label, meta){
+  return this;
+};
+
+Promise.prototype.traceProgress = function(label, meta){
+  return this;
+};
