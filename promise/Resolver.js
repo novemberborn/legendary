@@ -29,7 +29,7 @@ function emitProgress(pending, value){
 
       for(var i = 0, l = remaining; i < l; i++){
         var result = pending[i].progress(value);
-        if(result){
+        if(isPromise(result)){
           result.then(notified, resolver.reject);
         }else{
           remaining--;

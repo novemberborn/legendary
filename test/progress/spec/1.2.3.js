@@ -43,6 +43,15 @@ describe("1.2.3: `progress` returns a promise.", function(){
       });
     });
 
+    specify("Propagating through chains without onProgress", function(done){
+      var resolver = pending();
+      resolver.promise.then(function(){});
+      resolver.progress(sentinel).then(function(value){
+        assert.strictEqual(value, undefined);
+        done();
+      });
+    });
+
     specify("With registered callbacks", function(done){
       var resolver = pending();
       resolver.promise.then(null, null, function(){});
