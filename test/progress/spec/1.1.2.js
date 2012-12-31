@@ -34,7 +34,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
           return returnResolver.promise;
         });
 
-        resolver.progress().then(spy);
+        resolver.progress(sentinel).then(spy);
 
         setTimeout(function(){
           assert(!spy.called);
@@ -58,7 +58,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
           assert.strictEqual(value, sentinel);
           done();
         });
-        resolver.progress();
+        resolver.progress(sentinel);
       });
     });
 
@@ -73,7 +73,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
           return returnResolver.promise;
         });
 
-        resolver.progress().then(spy);
+        resolver.progress(sentinel).then(spy);
 
         setTimeout(function(){
           assert(!spy.called);
@@ -99,7 +99,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
           return returnResolver.promise;
         });
 
-        resolver.progress().then(null, spy);
+        resolver.progress(sentinel).then(null, spy);
 
         setTimeout(function(){
           assert(!spy.called);
@@ -136,7 +136,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
         error.name = "StopProgressPropagation";
         throw error;
       }).then(null, null, spy);
-      resolver.progress().then(function(){
+      resolver.progress(sentinel).then(function(){
         assert(!spy.called);
         done();
       });
@@ -151,7 +151,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
         error.name = "StopProgressPropagation";
         return rejected(error);
       }).then(null, null, spy);
-      resolver.progress().then(function(){
+      resolver.progress(sentinel).then(function(){
         assert(!spy.called);
         done();
       });
@@ -168,7 +168,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
         error.name = "StopProgressPropagation";
         throw error;
       });
-      resolver.progress().then(null, spy).then(function(){
+      resolver.progress(sentinel).then(null, spy).then(function(){
         assert(!spy.called);
         done();
       });
@@ -179,7 +179,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
       resolver.promise.then(null, null, function(value){
         throw sentinel;
       });
-      resolver.progress().then(null, function(error){
+      resolver.progress(sentinel).then(null, function(error){
         assert.strictEqual(error, sentinel);
         done();
       });
@@ -193,7 +193,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
       var resolver = pending();
       resolver.fulfill();
       resolver.promise.then(null, null, spy);
-      resolver.progress().then(function(){
+      resolver.progress(sentinel).then(function(){
         assert(!spy.called);
         done();
       });
@@ -205,7 +205,7 @@ describe("1.1.2: If `onProgress` is a function.", function(){
       var resolver = pending();
       resolver.reject();
       resolver.promise.then(null, null, spy);
-      resolver.progress().then(function(){
+      resolver.progress(sentinel).then(function(){
         assert(!spy.called);
         done();
       });

@@ -31,40 +31,40 @@ describe("1.2.3: `progress` returns a promise.", function(){
 
   describe("1.2.3.2: The returned promise is fulfilled with undefined once all progress callbacks are complete,", function(){
     specify("A promise is returned", function(){
-      var promise = pending().progress();
+      var promise = pending().progress(sentinel);
       assert(typeof promise === "object" || typeof promise === "function");
       assert(typeof promise.then === "function");
     });
 
-    specify("Without registered callbacks, the promise is fulfilled with `undefined`", function(done){
-      pending().progress().then(function(value){
+    specify("Without registered callbacks", function(done){
+      pending().progress(sentinel).then(function(value){
         assert.strictEqual(value, undefined);
         done();
       });
     });
 
-    specify("With registered callbacks, the promise is fulfilled with `undefined`", function(done){
+    specify("With registered callbacks", function(done){
       var resolver = pending();
       resolver.promise.then(null, null, function(){});
-      resolver.progress().then(function(value){
+      resolver.progress(sentinel).then(function(value){
         assert.strictEqual(value, undefined);
         done();
       });
     });
 
-    specify("For a fulfilled resolver, the promise is fulfilled with `undefined`", function(done){
+    specify("For a fulfilled resolver", function(done){
       var resolver = pending();
       resolver.fulfill();
-      resolver.progress().then(function(value){
+      resolver.progress(sentinel).then(function(value){
         assert.strictEqual(value, undefined);
         done();
       });
     });
 
-    specify("For a rejected resolver, the promise is fulfilled with `undefined`", function(done){
+    specify("For a rejected resolver", function(done){
       var resolver = pending();
       resolver.reject();
-      resolver.progress().then(function(value){
+      resolver.progress(sentinel).then(function(value){
         assert.strictEqual(value, undefined);
         done();
       });
@@ -94,7 +94,7 @@ describe("1.2.3: `progress` returns a promise.", function(){
         throw dummy;
       });
 
-      resolver.progress().then(null, function(error){
+      resolver.progress(sentinel).then(null, function(error){
         assert.strictEqual(error, sentinel);
         done();
       });
@@ -119,7 +119,7 @@ describe("1.2.3: `progress` returns a promise.", function(){
         throw dummy;
       });
 
-      resolver.progress().then(null, function(error){
+      resolver.progress(sentinel).then(null, function(error){
         assert.strictEqual(error, sentinel);
         done();
       });
