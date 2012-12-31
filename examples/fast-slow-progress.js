@@ -1,3 +1,5 @@
+"use strict";
+
 // Fast-low progress emission, copied from <http://jsfiddle.net/cLtNS/1/> with
 // discussion at <https://github.com/kriskowal/q/pull/114#issuecomment-8739693>.
 
