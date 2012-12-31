@@ -57,6 +57,8 @@ function Resolver(promise){
   var fulfilled = false;
   // Stores the fulfillment value or rejection reason.
   var result;
+  // Callback for when unhandled rejections are handled.
+  var signalHandled;
 
   function fulfill(value){
     if(pending){
@@ -73,9 +75,10 @@ function Resolver(promise){
   function reject(reason){
     if(pending){
       result = reason;
+      signalHandled = Notifier.unhandledRejection(reason);
 
       for(var i = 0, l = pending.length; i < l; i++){
-        pending[i].notifySync(false, reason);
+        pending[i].notifySync(false, reason, signalHandled);
       }
       pending = null;
     }
@@ -95,7 +98,7 @@ function Resolver(promise){
     if(pending){
       pending.push(notifier);
     }else{
-      notifier.notify(fulfilled, result);
+      notifier.notify(fulfilled, result, signalHandled);
     }
     return notifier.promise;
   }

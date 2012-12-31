@@ -30,3 +30,27 @@ exports.logTraces = function(){
 if(argv["legendary-tracer"] === true){
   exports.logTraces();
 }
+
+exports.catchUnhandled = function(){
+  return require("./debug/unhandled");
+};
+
+exports.logUnhandled = function(delay){
+  if(!delay){
+    exports.catchUnhandled().on("unhandled", function(tracked){
+      inspect(tracked.reason, "unhandled rejection");
+    });
+  }else{
+    exports.catchUnhandled().on("unhandled", function(tracked){
+      setTimeout(function(){
+        if(!tracked.handled){
+          inspect(tracked.reason, "unhandled rejection @ " + new Date(tracked.timestamp).toISOString());
+        }
+      }, delay);
+    });
+  }
+};
+
+if(argv.hasOwnProperty("legendary-unhandled")){
+  exports.logUnhandled(typeof argv["legendary-unhandled"] === "number" ? argv["legendary-unhandled"] : 1000);
+}

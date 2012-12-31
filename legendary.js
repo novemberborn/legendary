@@ -17,7 +17,7 @@ exports.fulfilled = function(value){
 };
 
 exports.rejected = function(reason){
-  return new Notifier().notifySync(false, reason).promise;
+  return new Notifier().notifySync(false, reason, Notifier.unhandledRejection(reason)).promise;
 };
 
 exports.when = when;

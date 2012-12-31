@@ -15,16 +15,16 @@ var queue;
 function exec(){
   var snapshot = queue;
   queue = null;
-  for(var i = 0, l = snapshot.length; i < l; i += 3){
-    snapshot[i].notifySync(snapshot[i + 1], snapshot[i + 2]);
+  for(var i = 0, l = snapshot.length; i < l; i += 4){
+    snapshot[i].notifySync(snapshot[i + 1], snapshot[i + 2], snapshot[i + 3]);
   }
 }
-function enqueue(notifier, fulfilled, result){
+function enqueue(notifier, fulfilled, result, signalHandled){
   if(!queue){
     process.nextTick(exec);
-    queue = [notifier, fulfilled, result];
+    queue = [notifier, fulfilled, result, signalHandled];
   }else{
-    queue.push(notifier, fulfilled, result);
+    queue.push(notifier, fulfilled, result, signalHandled);
   }
   return notifier;
 }
@@ -51,6 +51,8 @@ function Notifier(onFulfilled, onRejected, onProgress){
   this.fulfilled = false;
   // Non-promise result of the callback
   this.result = null;
+  // Callback for when unhandled rejections are handled.
+  this.signalHandled = null;
   // Promise result of the callback
   this.returnedPromise = null;
 
@@ -65,6 +67,14 @@ function Notifier(onFulfilled, onRejected, onProgress){
 }
 
 module.exports = Notifier;
+
+Notifier.unhandledRejection = function(reason){
+  // Callback for when a promise is about to be rejected. All rejections start
+  // as unhandled. Should return a function that can be used to signal when
+  // the rejection is handled.
+
+  // No-op, implemented by `../debug/unhandled`.
+};
 
 Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
   if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
@@ -109,7 +119,8 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
   return enqueue(
     new Notifier(onFulfilled, onRejected),
     this.fulfilled,
-    this.result
+    this.result,
+    this.signalHandled
   ).promise;
 };
 
@@ -121,19 +132,19 @@ Notifier.prototype.progress = function(value){
       if(error && error.name === STOP_PROGRESS_PROPAGATION){
         return;
       }
-      return new Notifier().notifySync(false, error).promise;
+      return new Notifier().notifySync(false, error, Notifier.unhandledRejection(error)).promise;
     }
   }
 
   return when(value, this.resolver && this.resolver.progress, stopProgressPropagation);
 };
 
-Notifier.prototype.notify = function(fulfilled, result){
+Notifier.prototype.notify = function(fulfilled, result, signalHandled){
   // Ensures the notifier is notified in a future turn.
-  return enqueue(this, fulfilled, result);
+  return enqueue(this, fulfilled, result, signalHandled);
 };
 
-Notifier.prototype.notifySync = function(fulfilled, result){
+Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
   // Invoke the appropriate callback with the result received from the
   // resolver or promise.
 
@@ -142,6 +153,10 @@ Notifier.prototype.notifySync = function(fulfilled, result){
   var callbackReturnedPromise = false;
 
   if(hasCallback){
+    if(signalHandled && !fulfilled){
+      signalHandled();
+    }
+
     try{
       result = callback(result);
       callbackReturnedPromise = isPromise(result);
@@ -149,7 +164,10 @@ Notifier.prototype.notifySync = function(fulfilled, result){
     }catch(error){
       result = error;
       fulfilled = false;
+      this.signalHandled = Notifier.unhandledRejection(error);
     }
+  }else{
+    this.signalHandled = signalHandled;
   }
 
   this.onFulfilled = this.onRejected = this.onProgress = null;
