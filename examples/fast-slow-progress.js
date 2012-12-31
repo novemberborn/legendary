@@ -50,4 +50,4 @@ var b = slow();
 
 a.then(function(){
   return b;
-}).then(console.log);
+}).then(null, null, console.log);
