@@ -38,14 +38,12 @@ function stopProgressPropagation(error){
   throw error;
 }
 
-function Notifier(onFulfilled, onRejected, onProgress){
+function Notifier(callbacks){
   // Notifiers are created whenever a `then` is called. They will invoke
   // the appropriate callback and manage the promise for the return value
   // of the callbacks.
 
-  this.onFulfilled = onFulfilled;
-  this.onRejected = onRejected;
-  this.onProgress = onProgress;
+  this.callbacks = callbacks;
 
   this.pending = true;
   this.fulfilled = false;
@@ -117,7 +115,7 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
   // Set up a new notifier for the callbacks that is notified with the
   // appropriate state in a future turn.
   return enqueue(
-    new Notifier(onFulfilled, onRejected),
+    new Notifier([onFulfilled, onRejected]),
     this.fulfilled,
     this.result,
     this.signalHandled
@@ -125,9 +123,9 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
 };
 
 Notifier.prototype.progress = function(value){
-  if(this.onProgress){
+  if(this.callbacks && this.callbacks[2]){
     try{
-      value = this.onProgress(value);
+      value = this.callbacks[2](value);
     }catch(error){
       if(error && error.name === STOP_PROGRESS_PROPAGATION){
         return;
@@ -148,7 +146,7 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
   // Invoke the appropriate callback with the result received from the
   // resolver or promise.
 
-  var callback = fulfilled ? this.onFulfilled : this.onRejected;
+  var callback = this.callbacks && this.callbacks[fulfilled ? 0 : 1];
   var hasCallback = typeof callback === "function";
   var callbackReturnedPromise = false;
 
@@ -170,7 +168,8 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
     this.signalHandled = signalHandled;
   }
 
-  this.onFulfilled = this.onRejected = this.onProgress = null;
+  // Unset callbacks since they'll no longer be called.
+  this.callbacks = null;
 
   // At this point `fulfilled` depends on the execution result of
   // the callback.

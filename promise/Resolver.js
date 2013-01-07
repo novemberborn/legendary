@@ -94,7 +94,7 @@ function Resolver(promise){
       return promise;
     }
 
-    var notifier = new Notifier(onFulfilled, onRejected, onProgress);
+    var notifier = new Notifier([onFulfilled, onRejected, onProgress]);
     if(pending){
       pending.push(notifier);
     }else{
