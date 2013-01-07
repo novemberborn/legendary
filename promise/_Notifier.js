@@ -80,9 +80,20 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
     return this.promise;
   }
 
+  if(this.returnedPromise instanceof Promise){
+    // If a callback returned a Legendary promise, we can chain directly off
+    // that promise.
+
+    // Point further `then` calls directly to the returned promise, then
+    // remove the reference and hook up the callbacks.
+    this._promiseThen = this.returnedPromise.then;
+    this.returnedPromise = null;
+    return this._promiseThen(onFulfilled, onRejected, onProgress);
+  }
+
   if(this.pending && !this.resolver || this.returnedPromise){
     // We create a resolver for the notifier if `then` is called while the
-    // notifier is pending, or if a callback returned a promise.
+    // notifier is pending, or if a callback returned a foreign promise.
 
     var resolver = new Resolver(this.promise);
 
