@@ -66,7 +66,7 @@ function Resolver(promise){
       result = value;
 
       for(var i = 0, l = pending.length; i < l; i++){
-        pending[i].notifySync(true, value);
+        pending[i].notify(true, value);
       }
       pending = null;
     }
@@ -78,7 +78,7 @@ function Resolver(promise){
       signalHandled = Notifier.unhandledRejection(reason);
 
       for(var i = 0, l = pending.length; i < l; i++){
-        pending[i].notifySync(false, reason, signalHandled);
+        pending[i].notify(false, reason, signalHandled);
       }
       pending = null;
     }
