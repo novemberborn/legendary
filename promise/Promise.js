@@ -6,18 +6,18 @@ var Resolver = function(promise){
   return new Resolver(promise);
 };
 
-function Promise(perform){
+function Promise(start){
   // Creates a non-frozen promise without a functioning `then` method.
 
   if(!(this instanceof Promise)){
-    return new Promise(perform);
+    return new Promise(start);
   }
 
-  if(typeof perform === "function"){
-    // Only create a resolver for this promise if the `perform` function
+  if(typeof start === "function"){
+    // Only create a resolver for this promise if the `start` function
     // is provided. Otherwise a promise is created without a resolver,
     // leaving it to the caller to override the `then` method.
-    perform(new Resolver(this));
+    start(new Resolver(this));
   }
 }
 
