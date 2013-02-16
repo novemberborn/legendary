@@ -29,15 +29,6 @@ function enqueue(notifier, fulfilled, result, signalHandled){
   return notifier;
 }
 
-var STOP_PROGRESS_PROPAGATION = "StopProgressPropagation";
-function stopProgressPropagation(error){
-  if(error && error.name === STOP_PROGRESS_PROPAGATION){
-    return;
-  }
-
-  throw error;
-}
-
 function Notifier(callbacks){
   // Notifiers are created whenever a `then` is called. They will invoke
   // the appropriate callback and manage the promise for the return value
@@ -59,8 +50,8 @@ function Notifier(callbacks){
 
   // Set up the `then` method of the notifier.
   var self = this;
-  this.promise.then = function(onFulfilled, onRejected, onProgress){
-    return self._promiseThen(onFulfilled, onRejected, onProgress);
+  this.promise.then = function(onFulfilled, onRejected){
+    return self._promiseThen(onFulfilled, onRejected);
   };
 }
 
@@ -74,8 +65,8 @@ Notifier.unhandledRejection = function(reason){
   // No-op, implemented by `../debug/unhandled`.
 };
 
-Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
-  if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
+Notifier.prototype._promiseThen = function(onFulfilled, onRejected){
+  if(typeof onFulfilled !== "function" && typeof onRejected !== "function"){
     // Return the original promise if no callbacks are passed.
     return this.promise;
   }
@@ -88,7 +79,7 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
     // remove the reference and hook up the callbacks.
     this._promiseThen = this.returnedPromise.then;
     this.returnedPromise = null;
-    return this._promiseThen(onFulfilled, onRejected, onProgress);
+    return this._promiseThen(onFulfilled, onRejected);
   }
 
   if(this.pending && !this.resolver || this.returnedPromise){
@@ -104,7 +95,7 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
 
     if(this.returnedPromise){
       // Forward the resolution of the returned promise to the resolver.
-      this.returnedPromise.then(resolver.fulfill, resolver.reject, resolver.progress);
+      this.returnedPromise.then(resolver.fulfill, resolver.reject);
       // We can remove the reference, since all calls to `then`
       // will go to the resolver.
       this.returnedPromise = null;
@@ -113,13 +104,12 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
     this.resolver = resolver;
 
     // Add the callbacks to the resolver.
-    return resolver.then(onFulfilled, onRejected, onProgress);
+    return resolver.then(onFulfilled, onRejected);
   }
 
   if(!this.pending && typeof onFulfilled !== "function" && typeof onRejected !== "function"){
     // Return the original promise if we're no longer pending but no callbacks
-    // are passed. If a progress callback happens to be passed it'll never
-    // be called anyway.
+    // are passed.
     return this.promise;
   }
 
@@ -131,21 +121,6 @@ Notifier.prototype._promiseThen = function(onFulfilled, onRejected, onProgress){
     this.result,
     this.signalHandled
   ).promise;
-};
-
-Notifier.prototype.progress = function(value){
-  if(this.callbacks && this.callbacks[2]){
-    try{
-      value = this.callbacks[2](value);
-    }catch(error){
-      if(error && error.name === STOP_PROGRESS_PROPAGATION){
-        return;
-      }
-      return new Notifier().notifySync(false, error, Notifier.unhandledRejection(error)).promise;
-    }
-  }
-
-  return when(value, this.resolver && this.resolver.progress, stopProgressPropagation);
 };
 
 Notifier.prototype.notify = function(fulfilled, result, signalHandled){
@@ -197,7 +172,7 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
 
     if(callbackReturnedPromise){
       try{
-        result.then(resolver.fulfill, resolver.reject, resolver.progress);
+        result.then(resolver.fulfill, resolver.reject);
       }catch(error){
         resolver.reject(error);
       }

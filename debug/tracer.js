@@ -4,7 +4,7 @@ var EventEmitter = require("events").EventEmitter;
 var Promise = require("../promise/Promise");
 
 Promise.prototype.trace = function(label, meta){
-  this.then(traceFulfilled(label, meta), traceRejected(label, meta), traceProgress(label, meta));
+  this.then(traceFulfilled(label, meta), traceRejected(label, meta));
   return this;
 };
 
@@ -15,11 +15,6 @@ Promise.prototype.traceFulfilled = function(label, meta){
 
 Promise.prototype.traceRejected = function(label, meta){
   this.then(null, traceRejected(label, meta));
-  return this;
-};
-
-Promise.prototype.traceProgress = function(label, meta){
-  this.then(null, null, traceProgress(label, meta));
   return this;
 };
 
@@ -34,11 +29,5 @@ function traceFulfilled(label, meta){
 function traceRejected(label, meta){
   return function(reason){
     emitter.emit("rejected", reason, label, meta);
-  };
-}
-
-function traceProgress(label, meta){
-  return function(value){
-    emitter.emit("progress", value, label, meta);
   };
 }

@@ -9,40 +9,6 @@ function undef(){
   return undefined;
 }
 
-function emitProgress(pending, value){
-  if(!pending || !pending.length){
-    if(isPromise(value)){
-      return when(value, undef);
-    }
-
-    return new Notifier().notifySync(true, undefined).promise;
-  }
-
-  return when(value, function(value){
-    return new Promise(function(resolver){
-      var remaining = pending.length;
-      function notified(){
-        if(--remaining === 0){
-          resolver.fulfill(undefined);
-        }
-      }
-
-      for(var i = 0, l = remaining; i < l; i++){
-        var result = pending[i].progress(value);
-        if(isPromise(result)){
-          result.then(notified, resolver.reject);
-        }else{
-          remaining--;
-        }
-      }
-
-      if(remaining === 0){
-        resolver.fulfill(undefined);
-      }
-    });
-  });
-}
-
 function Resolver(promise){
   // Sets up a resolver for the promise.
 
@@ -84,17 +50,13 @@ function Resolver(promise){
     }
   }
 
-  function progress(value){
-    return emitProgress(pending, value);
-  }
-
-  function then(onFulfilled, onRejected, onProgress){
-    if(typeof onFulfilled !== "function" && typeof onRejected !== "function" && typeof onProgress !== "function"){
+  function then(onFulfilled, onRejected){
+    if(typeof onFulfilled !== "function" && typeof onRejected !== "function"){
       // Return the original promise if no handlers are passed.
       return promise;
     }
 
-    var notifier = new Notifier([onFulfilled, onRejected, onProgress]);
+    var notifier = new Notifier([onFulfilled, onRejected]);
     if(pending){
       pending.push(notifier);
     }else{
@@ -105,7 +67,6 @@ function Resolver(promise){
 
   resolver.fulfill = fulfill;
   resolver.reject = reject;
-  resolver.progress = progress;
 
   resolver.then = then;
   promise.then = then;

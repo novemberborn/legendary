@@ -11,7 +11,7 @@ exports.enableTracer = function(){
 
 exports.logTraces = function(){
   var tracer = exports.enableTracer();
-  ["fulfilled", "rejected", "progress"].forEach(function(type){
+  ["fulfilled", "rejected"].forEach(function(type){
     tracer.on(type, function(value, label, meta){
       if(label){
         label += " (" + type + ")";

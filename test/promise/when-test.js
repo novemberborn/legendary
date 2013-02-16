@@ -33,10 +33,6 @@ describe("when() taking a non-promise value", function(){
   specify("with only an `onRejected` callback returns the value", function(){
     assert.strictEqual(when(sentinel, null, function(){}), sentinel);
   });
-
-  specify("with only an `onProgress` callback returns the value", function(){
-    assert.strictEqual(when(sentinel, null, null, function(){}), sentinel);
-  });
 });
 
 describe("when() taking a foreign promise value", function(){
@@ -76,21 +72,6 @@ describe("when() taking a foreign promise value", function(){
       done();
     });
   });
-
-  specify("hooks up `onProgress` and propagates it as expected", function(done){
-    when({
-      then: function(onFulfilled, onRejected, onProgress){
-        setTimeout(function(){
-          onProgress(2);
-        }, 10);
-      }
-    }, null, null, function(value){
-      return value * 2;
-    }).then(null, null, function(value){
-      assert.equal(value, 4);
-      done();
-    });
-  });
 });
 
 describe("when() taking a Legendary promise value", function(){
@@ -110,16 +91,5 @@ describe("when() taking a Legendary promise value", function(){
       assert.equal(value, 4);
       done();
     });
-  });
-
-  specify("hooks up `onProgress` and propagates it as expected", function(done){
-    var resolver = pending();
-    when(resolver.promise, null, null, function(value){
-      return value * 2;
-    }).then(null, null, function(value){
-      assert.equal(value, 4);
-      done();
-    });
-    resolver.progress(2);
   });
 });

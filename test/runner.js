@@ -11,7 +11,7 @@ var mocha = new Mocha({
   slow: Infinity
 });
 
-var patterns = ["promise/progress-spec/*.js", "promise/*-test.js"];
+var patterns = ["promise/*-test.js"];
 
 patterns.reduce(function(paths, pattern){
   return paths.concat(glob.sync(pattern, {

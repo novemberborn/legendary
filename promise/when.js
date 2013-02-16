@@ -9,7 +9,7 @@ var Notifier = function(){
   return new Notifier();
 };
 
-function when(valueOrPromise, onFulfilled, onRejected, onProgress){
+function when(valueOrPromise, onFulfilled, onRejected){
   var receivedPromise = isPromise(valueOrPromise);
   var nativePromise = receivedPromise && valueOrPromise instanceof Promise;
 
@@ -23,10 +23,10 @@ function when(valueOrPromise, onFulfilled, onRejected, onProgress){
     }
   }else if(!nativePromise){
     valueOrPromise = new Promise(function(resolver){
-      valueOrPromise.then(resolver.fulfill, resolver.reject, resolver.progress);
+      valueOrPromise.then(resolver.fulfill, resolver.reject);
     });
   }
 
-  return valueOrPromise.then(onFulfilled, onRejected, onProgress);
+  return valueOrPromise.then(onFulfilled, onRejected);
 }
 module.exports = when;

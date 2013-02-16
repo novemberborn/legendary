@@ -23,7 +23,7 @@ function Promise(start){
 
 module.exports = Promise;
 
-Promise.prototype.then = function(onFulfilled, onRejected, onProgress){
+Promise.prototype.then = function(onFulfilled, onRejected){
   return new Promise();
 };
 
@@ -36,9 +36,5 @@ Promise.prototype.traceFulfilled = function(label, meta){
 };
 
 Promise.prototype.traceRejected = function(label, meta){
-  return this;
-};
-
-Promise.prototype.traceProgress = function(label, meta){
   return this;
 };

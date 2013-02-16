@@ -18,8 +18,4 @@ describe("Tracing is a no-op, returning the same promise", function(){
   specify("traceRejected()", function(){
     assert.strictEqual(promise.traceRejected(), promise);
   });
-
-  specify("traceProgress()", function(){
-    assert.strictEqual(promise.traceProgress(), promise);
-  });
 });
