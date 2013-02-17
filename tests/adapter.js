@@ -1,6 +1,6 @@
 "use strict";
 
-var legendary = require("../legendary");
+var legendary = require("../");
 
 exports.pending = function(){
   var deferred = {};

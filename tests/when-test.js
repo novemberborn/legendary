@@ -7,9 +7,9 @@ var pending = adapter.pending;
 var fulfilled = adapter.fulfilled;
 var rejected = adapter.rejected;
 
-var when = require("../../promise/when");
-var isPromise = require("../../promise/is");
-var Promise = require("../../promise/Promise");
+var Promise = require("../").Promise;
+var when = require("../").when;
+var isThenable = require("../").isThenable;
 
 var sentinel = {};
 
@@ -23,7 +23,7 @@ describe("when() taking a non-promise value", function(){
 
   specify("without other arguments returns a promise for the value", function(done){
     var promise = when(sentinel);
-    assert(isPromise(promise));
+    assert(isThenable(promise));
     promise.then(function(value){
       assert.strictEqual(value, sentinel);
       done();
@@ -39,7 +39,7 @@ describe("when() taking a foreign promise value", function(){
   specify("converts to a Legendary promise", function(){
     var foreign = { then: function(){} };
     var converted = when(foreign);
-    assert(isPromise(converted));
+    assert(isThenable(converted));
     assert(converted instanceof Promise);
   });
 

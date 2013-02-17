@@ -11,14 +11,14 @@ var mocha = new Mocha({
   slow: Infinity
 });
 
-var patterns = ["promise/*-test.js"];
+var patterns = ["../node_modules/promises-aplus-tests/lib/tests/*.js", "./*-test.js"];
 
 patterns.reduce(function(paths, pattern){
   return paths.concat(glob.sync(pattern, {
     cwd: __dirname
   }));
 }, []).forEach(function(file){
-  mocha.addFile(path.join("test", file));
+  mocha.addFile(path.join("tests", file));
 });
 
 global.adapter = require("./adapter");
