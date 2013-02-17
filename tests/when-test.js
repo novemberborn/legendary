@@ -33,6 +33,17 @@ describe("when() taking a non-promise value", function(){
   specify("with only an `onRejected` callback returns the value", function(){
     assert.strictEqual(when(sentinel, null, function(){}), sentinel);
   });
+
+  specify("returns a rejected promise if the `onFulfilled` callback throws", function(done){
+    var promise = when(true, function(value){
+      throw sentinel;
+    });
+    assert(isThenable(promise));
+    promise.then(null, function(error){
+      assert.strictEqual(error, sentinel);
+      done();
+    });
+  });
 });
 
 describe("when() taking a foreign promise value", function(){
