@@ -23,9 +23,5 @@
   },
   "scripts": {
     "test": "promises-aplus-tests test/adapter && test/runner.js"
-  },
-  "dependencies": {
-    "optimist": "~0.3.5",
-    "eyes": "~0.1.8"
   }
 }
