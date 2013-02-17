@@ -1,14 +1,18 @@
 "use strict";
 
 var Promise = require("./Promise");
-var isPromise = require("./is");
-var when = require("./when");
+var isThenable = require("./is");
 
-var Resolver = function(promise){
-  // Work around circular dependency between Resolver and Notifier.
-  Resolver = require("./Resolver");
-  return new Resolver(promise);
+// Promise subclass that does not execute a factory method, but takes a
+// notifier instance instead.
+var PromiseForNotifier = function(notifier){
+  // Don't set to `notifier.then` as that method may be replaced, and we want
+  // `promise.then` to be a free function.
+  this.then = function(onFulfilled, onRejected){
+    return notifier.then(onFulfilled, onRejected);
+  };
 };
+PromiseForNotifier.prototype = new Promise(function(){});
 
 // Maintain a queue of notifiers that need to be notified in a future turn.
 var queue;
@@ -43,16 +47,14 @@ function Notifier(callbacks){
   // Callback for when unhandled rejections are handled.
   this.signalHandled = null;
   // Promise result of the callback
-  this.returnedPromise = null;
+  this.returnedThenable = null;
 
   // The promise for the return value of the callbacks.
-  this.promise = new Promise();
-
-  // Set up the `then` method of the notifier.
-  var self = this;
-  this.promise.then = function(onFulfilled, onRejected){
-    return self._promiseThen(onFulfilled, onRejected);
-  };
+  this.promise = new PromiseForNotifier(this);
+  // Resolver methods, to be defined if then() is called while the notifier
+  // is pending.
+  this.resolve = null;
+  this.reject = null;
 }
 
 module.exports = Notifier;
@@ -65,56 +67,34 @@ Notifier.unhandledRejection = function(reason){
   // No-op, implemented by `../debug/unhandled`.
 };
 
-Notifier.prototype._promiseThen = function(onFulfilled, onRejected){
+Notifier.prototype.then = function(onFulfilled, onRejected){
   if(typeof onFulfilled !== "function" && typeof onRejected !== "function"){
     // Return the original promise if no callbacks are passed.
     return this.promise;
   }
 
-  if(this.returnedPromise instanceof Promise){
-    // If a callback returned a Legendary promise, we can chain directly off
-    // that promise.
-
-    // Point further `then` calls directly to the returned promise, then
-    // remove the reference and hook up the callbacks.
-    this._promiseThen = this.returnedPromise.then;
-    this.returnedPromise = null;
-    return this._promiseThen(onFulfilled, onRejected);
+  if(this.pending && !this.resolve){
+    // The notifier is still pending, create a resolver to manage the new
+    // callbacks.
+    var self = this;
+    this.then = new Promise(function(resolve, reject){
+      self.resolve = resolve;
+      self.reject = reject;
+    }).then;
+    return this.then(onFulfilled, onRejected);
   }
 
-  if(this.pending && !this.resolver || this.returnedPromise){
-    // We create a resolver for the notifier if `then` is called while the
-    // notifier is pending, or if a callback returned a foreign promise.
-
-    var resolver = new Resolver(this.promise);
-
-    // Note that the resolver has replaced the `then` method on
-    // the promise. However the methods we set up in our constructor may have
-    // been handed out already. Point our methods to the resolver as well.
-    this._promiseThen = resolver.then;
-
-    if(this.returnedPromise){
-      // Forward the resolution of the returned promise to the resolver.
-      this.returnedPromise.then(resolver.fulfill, resolver.reject);
-      // We can remove the reference, since all calls to `then`
-      // will go to the resolver.
-      this.returnedPromise = null;
-    }
-
-    this.resolver = resolver;
-
-    // Add the callbacks to the resolver.
-    return resolver.then(onFulfilled, onRejected);
+  if(this.returnedThenable){
+    // The notifier is fulfilled with a thenable, ensure a Legendary promise
+    // to manage the new callbacks.
+    var thenable = this.returnedThenable instanceof Promise ? this.returnedThenable : Promise.from(this.returnedThenable);
+    this.then = thenable.then;
+    this.returnedThenable = null;
+    return this.then(onFulfilled, onRejected);
   }
 
-  if(!this.pending && typeof onFulfilled !== "function" && typeof onRejected !== "function"){
-    // Return the original promise if we're no longer pending but no callbacks
-    // are passed.
-    return this.promise;
-  }
-
-  // Set up a new notifier for the callbacks that is notified with the
-  // appropriate state in a future turn.
+  // The notifier is no longer pending, create a new notifier to invoke the
+  // appropriate callback in a future turn.
   return enqueue(
     new Notifier([onFulfilled, onRejected]),
     this.fulfilled,
@@ -134,7 +114,7 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
 
   var callback = this.callbacks && this.callbacks[fulfilled ? 0 : 1];
   var hasCallback = typeof callback === "function";
-  var callbackReturnedPromise = false;
+  var callbackReturnedThenable = false;
 
   if(hasCallback){
     if(signalHandled && !fulfilled){
@@ -143,7 +123,7 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
 
     try{
       result = callback(result);
-      callbackReturnedPromise = isPromise(result);
+      callbackReturnedThenable = isThenable(result);
       fulfilled = true;
     }catch(error){
       result = error;
@@ -162,30 +142,20 @@ Notifier.prototype.notifySync = function(fulfilled, result, signalHandled){
   this.pending = false;
   this.fulfilled = fulfilled;
 
-  // *After* the callback is invoked, get a reference to a resolver for
-  // the notifier's promise.
-  var resolver = this.resolver;
-
-  if(resolver){
+  if(this.resolve){
     // If there is a resolver, make sure it's fulfilled or rejected
-    // as appropriate.
+    // appropriately.
 
-    if(callbackReturnedPromise){
-      try{
-        result.then(resolver.fulfill, resolver.reject);
-      }catch(error){
-        resolver.reject(error);
-      }
-    }else if(fulfilled){
-      resolver.fulfill(result);
+    if(fulfilled){
+      this.resolve(result);
     }else{
-      resolver.reject(result);
+      this.reject(result);
     }
   }else{
     // Store the execution result such that we can use it if `then` is
     // called on the notifier's promise.
-    if(callbackReturnedPromise){
-      this.returnedPromise = result;
+    if(callbackReturnedThenable){
+      this.returnedThenable = result;
     }else{
       this.result = result;
     }

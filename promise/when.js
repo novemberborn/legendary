@@ -1,6 +1,6 @@
 "use strict";
 
-var isPromise = require("./is");
+var isThenable = require("./is");
 var Promise = require("./Promise");
 
 var Notifier = function(){
@@ -9,24 +9,19 @@ var Notifier = function(){
   return new Notifier();
 };
 
-function when(valueOrPromise, onFulfilled, onRejected){
-  var receivedPromise = isPromise(valueOrPromise);
-  var nativePromise = receivedPromise && valueOrPromise instanceof Promise;
-
-  if(!receivedPromise){
+function when(valueOrThenable, onFulfilled, onRejected){
+  if(!isThenable(valueOrThenable)){
     if(typeof onFulfilled === "function"){
-      return onFulfilled(valueOrPromise);
+      return onFulfilled(valueOrThenable);
     }else if(arguments.length <= 1){
-      return new Notifier().notifySync(true, valueOrPromise).promise;
+      return new Notifier().notifySync(true, valueOrThenable).promise;
     }else{
-      return valueOrPromise;
+      return valueOrThenable;
     }
-  }else if(!nativePromise){
-    valueOrPromise = new Promise(function(resolver){
-      valueOrPromise.then(resolver.fulfill, resolver.reject);
-    });
   }
 
-  return valueOrPromise.then(onFulfilled, onRejected);
+  return (
+    valueOrThenable instanceof Promise ? valueOrThenable : Promise.from(valueOrThenable)
+  ).then(onFulfilled, onRejected);
 }
 module.exports = when;
