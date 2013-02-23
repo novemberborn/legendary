@@ -9,9 +9,9 @@ exports.isThenable = require("./lib/isThenable");
 
 var Notifier = require("./lib/Notifier");
 exports.fulfilled = function(value){
-  return new Notifier().notifySync(true, value).promise;
+  return new Notifier().now(true, value).promise;
 };
 
 exports.rejected = function(reason){
-  return new Notifier().notifySync(false, reason, exports.unhandledRejection(reason)).promise;
+  return new Notifier().now(false, reason, exports.unhandledRejection(reason)).promise;
 };
