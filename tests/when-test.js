@@ -3,7 +3,6 @@
 var assert = require("assert");
 
 var adapter = global.adapter;
-var pending = adapter.pending;
 var fulfilled = adapter.fulfilled;
 var rejected = adapter.rejected;
 
@@ -35,7 +34,7 @@ describe("when() taking a non-promise value", function(){
   });
 
   specify("returns a rejected promise if the `onFulfilled` callback throws", function(done){
-    var promise = when(true, function(value){
+    var promise = when(true, function(){
       throw sentinel;
     });
     assert(isThenable(promise));
