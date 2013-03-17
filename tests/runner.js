@@ -11,7 +11,10 @@ var mocha = new Mocha({
   slow: Infinity
 });
 
-var patterns = ["../node_modules/promises-aplus-tests/lib/tests/*.js", "./*-test.js"];
+var patterns = [
+  "../node_modules/promises-aplus-tests/lib/tests/*.js",
+  "./*-test.js"
+];
 
 patterns.reduce(function(paths, pattern){
   return paths.concat(glob.sync(pattern, {
