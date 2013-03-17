@@ -6,11 +6,11 @@ exports.Promise = require("./lib/Promise");
 
 exports.when = require("./lib/when");
 
-var Notifier = require("./lib/Notifier");
+var ResolutionPropagator = require("./lib/ResolutionPropagator");
 exports.fulfilled = function(value){
-  return new Notifier().settle(true, value);
+  return new ResolutionPropagator().settle(true, value).promise;
 };
 
 exports.rejected = function(reason){
-  return new Notifier().settle(false, reason, exports.unhandledRejection(reason));
+  return new ResolutionPropagator().settle(false, reason, exports.unhandledRejection(reason)).promise;
 };
