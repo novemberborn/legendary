@@ -77,7 +77,7 @@ describe("If (at least) the `onFulfilled` callback is passed:", function(){
   });
 
   describe("If a non-thenable was received, it's passed to the `onFulfilled` callback.", function(){
-    specify("If the callback throws, a rejected promise is returned with the thrown error as rejection reason.", function(done){
+    specify("If the callback throws, a rejected promise is returned with the thrown exception as rejection reason.", function(done){
       var result = when(true, function(){
         throw sentinel;
       });
