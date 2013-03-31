@@ -10,5 +10,5 @@ exports.pending = function(){
   });
   return deferred;
 };
-exports.fulfilled = legendary.fulfilled;
+exports.fulfilled = legendary.when;
 exports.rejected = legendary.rejected;
