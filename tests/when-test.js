@@ -77,7 +77,7 @@ describe("If (at least) the `onFulfilled` callback is passed:", function(){
     result.then(null, function(value){
       assert.equal(value, sentinel);
       done();
-    })
+    });
   });
 
   describe("If a fulfilled promise was received, its value is passed to the `onFulfilled` callback.", function(){
