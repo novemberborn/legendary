@@ -2,7 +2,7 @@
 
 exports = module.exports = require("./lib/legendary");
 
-exports.Promise = require("./lib/Promise");
+exports.Promise = require("./lib/promises").Promise;
 exports.when = require("./lib/when");
 
 var ResolutionPropagator = require("./lib/ResolutionPropagator");
