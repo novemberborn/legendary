@@ -8,7 +8,7 @@ var fulfilled = adapter.fulfilled;
 var rejected = adapter.rejected;
 
 var Promise = require("../").Promise;
-var when = require("../").when;
+var when = require("../lib/when");
 
 var sentinel = {};
 

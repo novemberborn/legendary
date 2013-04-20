@@ -1,14 +1,18 @@
 "use strict";
 
-var legendary = require("../");
+var Promise = require("../").Promise;
 
 exports.pending = function(){
   var deferred = {};
-  deferred.promise = new legendary.Promise(function(resolve, reject){
+  deferred.promise = new Promise(function(resolve, reject){
     deferred.fulfill = resolve;
     deferred.reject = reject;
   });
   return deferred;
 };
-exports.fulfilled = legendary.when;
-exports.rejected = legendary.rejected;
+exports.fulfilled = function(value){
+  return Promise.from(value);
+};
+exports.rejected = function(reason){
+  return Promise.rejected(reason);
+};
