@@ -165,3 +165,87 @@ describe("Cancellation", function(){
     });
   });
 });
+
+describe("Promise#fork()", function(){
+  specify("Creates a new promise that assumes the same state", function(done){
+    var promise = fulfilled(sentinel);
+    var forked = promise.fork();
+    forked.then(function(result){
+      assert.strictEqual(result, sentinel);
+    }).then(done, done);
+  });
+
+  specify("Creates a new promise that does not propagate cancellation to its origin", function(done){
+    var called = false;
+    var promise = new Promise(function(){
+      return function(){ called = true; };
+    });
+    var forked = promise.fork();
+    forked.cancel();
+    forked.then(null, function(reason){
+      assert(!called);
+      assert.equal(reason.name, "cancel");
+    }).then(done, done);
+  });
+});
+
+describe("Promise#uncancellable", function(){
+  specify("Creates a new promise that assumes the same state", function(done){
+    var promise = fulfilled(sentinel);
+    var uncancellable = promise.uncancellable();
+    uncancellable.then(function(result){
+      assert.strictEqual(result, sentinel);
+    }).then(done, done);
+  });
+
+  specify("Creates a new promise that cannot be cancelled", function(done){
+    var resolvePromise;
+    var promise = new Promise(function(resolve){
+      resolvePromise = resolve;
+    });
+    var uncancellable = promise.uncancellable();
+    uncancellable.cancel();
+    resolvePromise(sentinel);
+    uncancellable.then(function(value){
+      assert.strictEqual(value, sentinel);
+    }).then(done, done);
+  });
+
+  specify("Creates a new promise that does not propagate cancellation to its origin", function(done){
+    var called = false;
+    var resolvePromise;
+    var promise = new Promise(function(resolve){
+      resolvePromise = resolve;
+      return function(){ called = true; };
+    });
+
+    var uncancellable = promise.uncancellable();
+    uncancellable.cancel();
+    resolvePromise(sentinel);
+
+    uncancellable.then(function(){
+      assert(!called);
+    }).then(done, done);
+  });
+
+  specify("Creates a new promise, of which derived promises can be cancelled, without cancelling the uncancellable promise", function(done){
+    var resolvePromise;
+    var promise = new Promise(function(resolve){
+      resolvePromise = resolve;
+    });
+
+    var uncancellable = promise.uncancellable();
+    var derived = uncancellable.then(noop);
+
+    derived.cancel();
+    resolvePromise(sentinel);
+
+    derived.then(null, function(reason){
+      assert(reason.name, "cancel");
+      console.log(uncancellable.inspectState())
+      return uncancellable.then(function(value){
+        assert.strictEqual(vale, sentinel);
+      });
+    }).then(done, done);
+  });
+});
