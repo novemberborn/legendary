@@ -166,6 +166,23 @@ describe("Cancellation", function(){
   });
 });
 
+describe("NeverCancellable", function(){
+  specify("cancel() is a noop", function(done){
+    var resolvePromise;
+    var called = false;
+    var promise = new NeverCancellable(function(resolve){
+      resolvePromise = resolve;
+      return function(){ called = true; };
+    });
+    promise.cancel();
+    resolvePromise(sentinel);
+    promise.then(function(result){
+      assert(!called);
+      assert.strictEqual(result, sentinel);
+    }).then(done, done);
+  });
+});
+
 describe("Promise#fork()", function(){
   specify("Creates a new promise that assumes the same state", function(done){
     var promise = fulfilled(sentinel);

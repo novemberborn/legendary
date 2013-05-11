@@ -3,3 +3,4 @@
 exports = module.exports = require("./lib/legendary");
 
 exports.Promise = require("./lib/promises").Promise;
+exports.NeverCancellable = require("./lib/promises").NeverCancellable;
