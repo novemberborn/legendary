@@ -12,7 +12,6 @@ var mocha = new Mocha({
 });
 
 var patterns = [
-  '../node_modules/promises-aplus-tests/lib/tests/*.js',
   './*-test.js'
 ];
 
