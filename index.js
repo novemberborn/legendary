@@ -1,5 +1,5 @@
-"use strict";
+'use strict';
 
-exports = module.exports = require("./lib/legendary");
+exports = module.exports = require('./lib/legendary');
 
-exports.Promise = require("./lib/promises").Promise;
+exports.Promise = require('./lib/promises').Promise;

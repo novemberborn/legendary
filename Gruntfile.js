@@ -1,14 +1,14 @@
-"use strict";
+'use strict';
 
-module.exports = function(grunt){
+module.exports = function(grunt) {
   grunt.initConfig({
-    pkg: grunt.file.readJSON("package.json"),
+    pkg: grunt.file.readJSON('package.json'),
 
     jshint: {
-      options: grunt.file.readJSON(".jshintrc"),
+      options: grunt.file.readJSON('.jshintrc'),
 
-      gruntfile: ["Gruntfile.js"],
-      lib: ["index.js", "lib/**/*.js"],
+      gruntfile: ['Gruntfile.js'],
+      lib: ['index.js', 'lib/**/*.js'],
 
       tests: {
         options: {
@@ -20,11 +20,11 @@ module.exports = function(grunt){
         },
 
         files: {
-          src: ["tests/**/*.js"]
+          src: ['tests/**/*.js']
         }
       }
     }
   });
 
-  grunt.loadNpmTasks("grunt-contrib-jshint");
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 };
