@@ -1,7 +1,6 @@
 {
   "curly": true,
   "eqeqeq": true,
-  "es5": true,
   "esnext": true,
   "globalstrict": true,
   "immed": true,
