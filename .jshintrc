@@ -1,0 +1,21 @@
+{
+  "curly": true,
+  "eqeqeq": true,
+  "es5": true,
+  "esnext": true,
+  "globalstrict": true,
+  "immed": true,
+  "indent": 2,
+  "lastsemic": true,
+  "latedef": true,
+  "newcap": true,
+  "noarg": true,
+  "node": true,
+  "nonew": true,
+  "undef": true,
+  "unused": true,
+  "quotmark": true,
+  "strict": true,
+  "trailing": true,
+  "white": false
+}
