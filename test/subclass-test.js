@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert');
+var assert = require('chai').assert;
 
 var blessed = require('../lib/blessed');
 var Promise = require('../').Promise;
@@ -28,101 +28,87 @@ function defer(constructor) {
   return deferred;
 }
 
-function identity(x) {
-  return x;
-}
+function identity(x) { return x; }
 
 var sentinel = {};
 
 describe('Subclassing', function() {
-  describe(
-      '1: then() on subclassed promise always returns a promise of the ' +
-          'same subclass',
-      function() {
-        specify('1.1: Called on promise itself', function() {
-          var promise = defer(SubPromise).promise;
-          var result = promise.then(identity);
-          assert(result instanceof SubPromise);
+  describe('#then()', function() {
+    it('preserves subclass when called on a pending promise', function() {
+      var chain = defer(SubPromise).promise.then(identity);
+      assert.instanceOf(chain, SubPromise);
+    });
+
+    it('preserves subclass when called on a pending promise chain', function() {
+      // Internally, the first then() creates an initialized propagator.
+      // The second then() transitions it to a delegated state, creating
+      // a new promise. That last promise must still be of the same subclass.
+      var chain = defer(SubPromise).promise.then(identity).then(identity);
+      assert.instanceOf(chain, SubPromise);
+    });
+
+    it('preserves subclass when onFulfilled callback returns value',
+        function() {
+          var dfd = defer(SubPromise);
+          dfd.resolve(sentinel);
+          // Internally, the first then creates a fulfilled propagator.
+          // The second then() also creates a fulfilled propagator which
+          // must yield a promise of the same subclass.
+          var chain = dfd.promise.then(identity).then(identity);
+          assert.instanceOf(chain, SubPromise);
         });
 
-        specify('1.2: Called on initialized propagator', function() {
-          // Note that the propagator transitions to the delegated state, which
-          // should create a subclassed promise. `then()` is called on *that*
-          // promise, so this is the same behavior as (1.1).
-          var promise = defer(SubPromise).promise;
-          var propagator = promise.then(identity);
-          var result = propagator.then(identity);
-          assert(result instanceof SubPromise);
+    it('preserves subclass when onFulfilled callbacks returns a different ' +
+        'pending promise',
+        function() {
+          var dfd = defer(SubPromise);
+          dfd.resolve();
+          // Internally, the first then creates a delegated propagator.
+          // The second then() also creates a pending propagator which
+          // must yield a promise of the same subclass.
+          var chain = dfd.promise.then(function() {
+            return defer(Promise).promise;
+          }).then(identity);
+          assert.instanceOf(chain, SubPromise);
         });
 
-        describe('1.3: Called on fulfilled propagator', function() {
-          specify('1.3.1: With transform to the same value', function(done) {
-            var dfd = defer(SubPromise);
-            dfd.resolve(sentinel);
-            dfd.promise.then(function() {
-              // Note that the original promise is now fulfilled. Invoking
-              // `then()` creates a propagator that is fulfilled because the
-              // transform returns a value. When `then()` is called on this
-              // new propagator it should return a subclassed promise.
-              var propagator = dfd.promise.then(identity);
-              setImmediate(function() {
-                var result = propagator.then(identity);
-                assert(result instanceof SubPromise);
-                done();
-              });
-            });
-          });
-
-          specify(
-              '1.3.2: With transform to a non-subclassed promise',
-              function(done) {
-                var dfd = defer(SubPromise);
-                dfd.resolve(sentinel);
-                dfd.promise.then(function() {
-                  // Note that the original promise is now fulfilled. Invoking
-                  // `then()` creates a propagator that is delegated because the
-                  // transform returns a pending promise. When `then()` is
-                  // called on this new propagator it should return a subclassed
-                  // promise.
-                  var propagator = dfd.promise.then(function() {
-                    return defer(Promise).promise;
-                  });
-                  setImmediate(function() {
-                    var result = propagator.then(identity);
-                    assert(result instanceof SubPromise);
-                    done();
-                  });
-                });
-              });
+    it('preserves subclass when onFulfilled callbacks returns a thenable',
+        function() {
+          var dfd = defer(SubPromise);
+          dfd.resolve();
+          // Internally, the first then creates a pending propagator.
+          // The second then() transitions it to a delegated state, creating
+          // a new promise. That last promise must still be of the same
+          // subclass.
+          var chain = dfd.promise.then(function() {
+            return { then: function() {} };
+          }).then(identity);
+          assert.instanceOf(chain, SubPromise);
         });
-      });
+  });
 
-  describe(
-      '2: resolve() synchronously adopts the state of any promise',
-      function() {
-        specify(
-            '2.1: resolving a subclassed promise with another of the same ' +
-                'subclass',
-            function() {
-              var dfd1 = defer(SubPromise);
-              var dfd2 = defer(SubPromise);
-              dfd2.resolve(sentinel);
-              dfd1.resolve(dfd2.promise);
-              var state = dfd1.promise.inspectState();
-              assert(state.isFulfilled);
-              assert.deepEqual(state.value, sentinel);
-            });
+  describe('resolve()', function() {
+    it('synchronously adopts state of a promise of the same subclass',
+        function() {
+          var dfd1 = defer(SubPromise);
+          var dfd2 = defer(SubPromise);
+          dfd2.resolve(sentinel);
+          dfd1.resolve(dfd2.promise);
+          var state = dfd1.promise.inspectState();
+          assert(state.isFulfilled);
+          assert.strictEqual(state.value, sentinel);
+        });
 
-        specify(
-            '2.1: resolving a subclassed promise with another, not subclassed',
-            function() {
-              var dfd1 = defer(SubPromise);
-              var dfd2 = defer(Promise);
-              dfd2.resolve(sentinel);
-              dfd1.resolve(dfd2.promise);
-              var state = dfd1.promise.inspectState();
-              assert(state.isFulfilled);
-              assert.deepEqual(state.value, sentinel);
-            });
-      });
+    it('synchronously adopts state of a promise of a different subclass',
+        function() {
+          var dfd1 = defer(SubPromise);
+          var dfd2 = defer(Promise);
+          dfd2.resolve(sentinel);
+          dfd1.resolve(dfd2.promise);
+          var state = dfd1.promise.inspectState();
+          assert(state.isFulfilled);
+          assert.strictEqual(state.value, sentinel);
+        });
+
+  });
 });

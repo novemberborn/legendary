@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert');
+var assert = require('chai').assert;
 var sinon = require('sinon');
 
 var Promise = require('../').Promise;
@@ -8,53 +8,38 @@ var Promise = require('../').Promise;
 var sentinel = {};
 
 describe('Promise.from()', function() {
-  specify('returns a promise that is an instance of Promise', function() {
-    var promise = Promise.from(sentinel);
-    assert(promise instanceof Promise);
+  it('returns a promise that is an instance of Promise', function() {
+    assert.instanceOf(Promise.from(sentinel), Promise);
   });
 
-  specify(
-      'when passed a non-thenable-non-promise-value, returns a new promise ' +
-          'that is fulfilled with this value',
-      function(done) {
-        var promise = Promise.from(sentinel);
-        promise.then(function(value) {
-          assert.deepEqual(value, sentinel);
-          done();
-        });
+  it('return a promise fulfilled with the non-thenable-non-promise-value ' +
+      'passed originally',
+      function() {
+        return assert.eventually.strictEqual(Promise.from(sentinel), sentinel);
       });
 
-  specify(
-      'when passed a promise, returns a new promise that adopts its state',
-      function(done) {
+  it('returns a new promise adopting the state of the promise passed',
+      function() {
         var promise = Promise.from(new Promise(function(resolve) {
-          setImmediate(resolve, sentinel);
+          Promise.from(sentinel).then(resolve);
         }));
-        promise.then(function(value) {
-          assert.deepEqual(value, sentinel);
-          done();
-        });
+        return assert.eventually.strictEqual(promise, sentinel);
       });
 });
 
 describe('Promise.rejected()', function() {
-  specify('returns a promise that is an instance of Promise', function() {
-    var promise = Promise.rejected(sentinel);
-    assert(promise instanceof Promise);
+  it('returns a promise that is an instance of Promise', function() {
+    assert.instanceOf(Promise.rejected(sentinel), Promise);
   });
 
-  specify('returns a rejected promise', function(done) {
-    var promise = Promise.rejected(sentinel);
-    promise.then(done, function(value) {
-      assert.deepEqual(value, sentinel);
-      done();
-    });
+  it('returns a rejected promise', function() {
+    var Sentinel = function() {};
+    return assert.isRejected(Promise.rejected(new Sentinel()), Sentinel);
   });
 });
 
 describe('Promise#to()', function() {
-  specify(
-      'Creates a new promise by calling \'from\' on the passed constructor',
+  it('Creates a new promise by calling \'from\' on the passed constructor',
       function() {
         var constructor = function() {};
         constructor.from = function() {
@@ -65,8 +50,8 @@ describe('Promise#to()', function() {
         var promise = Promise.from();
         var result = promise.to(constructor);
 
-        assert.deepEqual(result, sentinel);
-        assert(spy.calledOnce);
-        assert(spy.calledWithExactly(promise));
+        assert.strictEqual(result, sentinel);
+        assert.calledOnce(spy);
+        assert.calledWithExactly(spy, promise);
       });
 });
