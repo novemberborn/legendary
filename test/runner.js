@@ -14,9 +14,12 @@ var mocha = new Mocha({
   slow: Infinity
 });
 
-var patterns = [
-  './*-test.js'
-];
+var patterns = [];
+if (process.argv[2]) {
+  patterns.push(process.argv[2]);
+} else {
+  patterns.push('*-test.js');
+}
 
 var path = require('path');
 var glob = require('glob');
