@@ -110,4 +110,29 @@ describe('Subclassing', function() {
         });
 
   });
+
+  describe('blessed.extended helper', function() {
+    it('sets up inheritance', function() {
+      var Extended = blessed.extended(function() {});
+      assert.instanceOf(new Extended(), Promise);
+    });
+
+    it('keeps the constructor reference intact', function() {
+      var Extended = blessed.extended(function() {});
+      assert.strictEqual(new Extended().constructor, Extended);
+    });
+
+    it('copies constructor methods from Promise', function() {
+      var Extended = blessed.extended(function() {});
+      assert.strictEqual(Extended.from, Promise.from);
+      assert.strictEqual(Extended.rejected, Promise.rejected);
+    });
+
+    it('takes a base class argument', function() {
+      var Base = blessed.extended(function() {});
+      var Extended = blessed.extended(function() {}, Base);
+      assert.instanceOf(new Extended(), Promise);
+      assert.instanceOf(new Extended(), Base);
+    });
+  });
 });
