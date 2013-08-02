@@ -23,7 +23,7 @@
     "sinon": "~1.7.3"
   },
   "scripts": {
-    "test": "tests/runner.js"
+    "test": "test/runner.js"
   },
   "engines": {
     "node": "=>0.10.0"

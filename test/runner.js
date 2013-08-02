@@ -20,7 +20,7 @@ patterns.reduce(function(paths, pattern) {
     cwd: __dirname
   }));
 }, []).forEach(function(file) {
-  mocha.addFile(path.join('tests', file));
+  mocha.addFile(path.join('test', file));
 });
 
 global.adapter = require('./adapter');
