@@ -176,4 +176,77 @@ describe('Cancellation', function() {
       });
     });
   });
+
+  describe('#fork()', function() {
+    it('creates a new promise that assumes the same state', function() {
+      var promise = fulfilled(sentinel);
+      var forked = promise.fork();
+      assert.notStrictEqual(promise, forked);
+      return assert.eventually.strictEqual(forked, sentinel);
+    });
+
+    it('creates a new promise that does not propagate cancellation to its ' +
+        'origin',
+        function() {
+          var spy = sinon.spy();
+          var promise = new Promise(constant(spy));
+          var forked = promise.fork();
+          forked.cancel();
+          return assertCancelled(forked).then(function() {
+            assert.notCalled(spy);
+          });
+        });
+  });
+
+  describe('#uncancellable()', function() {
+    it('creates a new promise that assumes the same state', function() {
+      var promise = fulfilled(sentinel);
+      var uncancellable = promise.uncancellable();
+      assert.notStrictEqual(promise, uncancellable);
+      return assert.eventually.strictEqual(uncancellable, sentinel);
+    });
+
+    it('creates a new promise that cannot be cancelled', function() {
+      var resolvePromise;
+      var promise = new Promise(function(resolve) {
+        resolvePromise = resolve;
+      });
+      var uncancellable = promise.uncancellable();
+      uncancellable.cancel();
+      resolvePromise(sentinel);
+      return assert.eventually.strictEqual(uncancellable, sentinel);
+    });
+
+    it('creates a new promise that does not propagate cancellation to its ' +
+        'origin',
+        function() {
+          var spy = sinon.spy();
+          var resolvePromise;
+          var promise = new Promise(function(resolve) {
+            resolvePromise = resolve;
+            return spy;
+          });
+          var uncancellable = promise.uncancellable();
+          uncancellable.cancel();
+          resolvePromise(sentinel);
+          return assert.eventually.strictEqual(uncancellable, sentinel).then(
+              function() {
+                assert.notCalled(spy);
+              });
+        });
+
+    it('creates a new promise, of which derived promises can’t be cancelled ' +
+        'either',
+        function() {
+          var resolvePromise;
+          var promise = new Promise(function(resolve) {
+            resolvePromise = resolve;
+          });
+          var uncancellable = promise.uncancellable();
+          var derived = uncancellable.then(identity);
+          derived.cancel();
+          resolvePromise(sentinel);
+          return assert.eventually.strictEqual(derived, sentinel);
+        });
+  });
 });
