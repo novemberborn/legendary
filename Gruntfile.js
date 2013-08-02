@@ -14,8 +14,7 @@ module.exports = function(grunt) {
         options: {
           globals: {
             describe: true,
-            specify: true,
-            setImmediate: true
+            it: true
           }
         },
 
