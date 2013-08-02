@@ -2,8 +2,11 @@
 'use strict';
 
 var Mocha = require('mocha');
-var path = require('path');
-var glob = require('glob');
+require('mocha-as-promised')(Mocha);
+
+var chai = require('chai');
+chai.use(require('chai-as-promised'));
+require('sinon').assert.expose(chai.assert, { prefix: '' });
 
 var mocha = new Mocha({
   reporter: 'spec',
@@ -15,6 +18,8 @@ var patterns = [
   './*-test.js'
 ];
 
+var path = require('path');
+var glob = require('glob');
 patterns.reduce(function(paths, pattern) {
   return paths.concat(glob.sync(pattern, {
     cwd: __dirname
