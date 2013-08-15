@@ -129,6 +129,7 @@ describe('Subclassing', function() {
       assert.strictEqual(Extended.all, Promise.all);
       assert.strictEqual(Extended.any, Promise.any);
       assert.strictEqual(Extended.some, Promise.some);
+      assert.strictEqual(Extended.join, Promise.join);
     });
 
     it('sets up an `isInstance()` helper', function() {
