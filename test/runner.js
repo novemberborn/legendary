@@ -31,8 +31,6 @@ patterns.reduce(function(paths, pattern) {
   mocha.addFile(path.join('test', file));
 });
 
-global.adapter = require('./adapter');
-
 mocha.run(function(failures) {
   process.exit(failures);
 });

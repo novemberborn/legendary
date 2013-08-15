@@ -2,16 +2,10 @@
 
 var assert = require('chai').assert;
 var sinon = require('sinon');
+var sentinels = require('./sentinels');
 
 var Promise = require('../').Promise;
 var CancelError = require('../').CancelError;
-
-var adapter = require('./adapter');
-var fulfilled = adapter.fulfilled;
-var rejected = adapter.rejected;
-var pending = adapter.pending;
-
-var sentinel = {};
 
 function identity(x) { return x; }
 
@@ -34,21 +28,21 @@ function assertCancelled(promise) {
 }
 
 describe('Cancellation', function() {
-  describe('#cancel()', function() {
+  describe('Promise#cancel()', function() {
     it('is a no-op on a fulfilled promise', function() {
-      var promise = fulfilled(sentinel);
+      var promise = Promise.from(sentinels.one);
       promise.cancel();
-      return assert.eventually.strictEqual(promise, sentinel);
+      return assert.eventually.strictEqual(promise, sentinels.one);
     });
 
     it('is a no-op on a rejected promise', function() {
-      var promise = rejected(sentinel);
+      var promise = Promise.rejected(sentinels.one);
       promise.cancel();
-      return assert.eventually.strictEqual(invert(promise), sentinel);
+      return assert.eventually.strictEqual(invert(promise), sentinels.one);
     });
 
     it('rejects a pending promise with a CancelError', function() {
-      var promise = pending().promise;
+      var promise = new Promise(function() {});
       promise.cancel();
       return assertCancelled(promise);
     });
@@ -83,16 +77,16 @@ describe('Cancellation', function() {
     it('rejects the pending promise with an exception if it throws',
         function() {
           var promise = new Promise(function() {
-            return function() { throw sentinel; };
+            return function() { throw sentinels.one; };
           });
           promise.cancel();
-          return assert.eventually.strictEqual(invert(promise), sentinel);
+          return assert.eventually.strictEqual(invert(promise), sentinels.one);
         });
   });
 
   describe('under complex propagation scenarios', function() {
     it('cancels a derived promise', function() {
-      var promise = pending().promise;
+      var promise = new Promise(function() {});
       var derived = promise.then(identity);
       derived.cancel();
       return assertCancelled(derived);
@@ -113,7 +107,7 @@ describe('Cancellation', function() {
           var fulfilledSpy = sinon.spy();
           var rejectedSpy = sinon.spy();
 
-          var promise = fulfilled();
+          var promise = Promise.from();
           var derived = promise.then(fulfilledSpy);
           derived.cancel();
           derived.then(null, rejectedSpy);
@@ -128,8 +122,8 @@ describe('Cancellation', function() {
       it('cancels adoption when returned in promise chain', function() {
         var spy = sinon.spy();
         var inner = new Promise(constant(spy));
-        var derived = fulfilled().then(constant(inner));
-        return fulfilled().then(function() {
+        var derived = Promise.from().then(constant(inner));
+        return Promise.from().then(function() {
           derived.cancel();
           assert.calledOnce(spy);
           return assertCancelled(inner);
@@ -149,10 +143,10 @@ describe('Cancellation', function() {
     describe('assimilating thenables, upon cancellation', function() {
       it('ignores assimilation when returned in promise chain', function() {
         var resolveThenable;
-        var derived = fulfilled().then(constant({
+        var derived = Promise.from().then(constant({
           then: function(resolvePromise) { resolveThenable = resolvePromise; }
         })).then(identity);
-        return fulfilled().then(function() {
+        return Promise.from().then(function() {
           assert(resolveThenable);
           derived.cancel();
           resolveThenable('thenable result');
@@ -177,12 +171,12 @@ describe('Cancellation', function() {
     });
   });
 
-  describe('#fork()', function() {
+  describe('Promise#fork()', function() {
     it('creates a new promise that assumes the same state', function() {
-      var promise = fulfilled(sentinel);
+      var promise = Promise.from(sentinels.one);
       var forked = promise.fork();
       assert.notStrictEqual(promise, forked);
-      return assert.eventually.strictEqual(forked, sentinel);
+      return assert.eventually.strictEqual(forked, sentinels.one);
     });
 
     it('creates a new promise that does not propagate cancellation to its ' +
@@ -198,12 +192,12 @@ describe('Cancellation', function() {
         });
   });
 
-  describe('#uncancellable()', function() {
+  describe('Promise#uncancellable()', function() {
     it('creates a new promise that assumes the same state', function() {
-      var promise = fulfilled(sentinel);
+      var promise = Promise.from(sentinels.one);
       var uncancellable = promise.uncancellable();
       assert.notStrictEqual(promise, uncancellable);
-      return assert.eventually.strictEqual(uncancellable, sentinel);
+      return assert.eventually.strictEqual(uncancellable, sentinels.one);
     });
 
     it('creates a new promise that cannot be cancelled', function() {
@@ -213,8 +207,8 @@ describe('Cancellation', function() {
       });
       var uncancellable = promise.uncancellable();
       uncancellable.cancel();
-      resolvePromise(sentinel);
-      return assert.eventually.strictEqual(uncancellable, sentinel);
+      resolvePromise(sentinels.one);
+      return assert.eventually.strictEqual(uncancellable, sentinels.one);
     });
 
     it('creates a new promise that does not propagate cancellation to its ' +
@@ -228,9 +222,9 @@ describe('Cancellation', function() {
           });
           var uncancellable = promise.uncancellable();
           uncancellable.cancel();
-          resolvePromise(sentinel);
-          return assert.eventually.strictEqual(uncancellable, sentinel).then(
-              function() {
+          resolvePromise(sentinels.one);
+          return assert.eventually.strictEqual(uncancellable, sentinels.one)
+              .then(function() {
                 assert.notCalled(spy);
               });
         });
@@ -245,8 +239,8 @@ describe('Cancellation', function() {
           var uncancellable = promise.uncancellable();
           var derived = uncancellable.then(identity);
           derived.cancel();
-          resolvePromise(sentinel);
-          return assert.eventually.strictEqual(derived, sentinel);
+          resolvePromise(sentinels.one);
+          return assert.eventually.strictEqual(derived, sentinels.one);
         });
   });
 });
