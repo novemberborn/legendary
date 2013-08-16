@@ -10,3 +10,4 @@ exports.TimeoutError = require('./lib/TimeoutError');
 
 exports.timed = require('./lib/timed');
 exports.concurrent = require('./lib/concurrent');
+exports.fn = require('./lib/fn');
