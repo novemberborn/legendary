@@ -9,3 +9,4 @@ exports.CancellationError = require('./lib/CancellationError');
 exports.TimeoutError = require('./lib/TimeoutError');
 
 exports.timed = require('./lib/timed');
+exports.concurrent = require('./lib/concurrent');
