@@ -126,6 +126,9 @@ describe('Subclassing', function() {
       var Extended = blessed.extended(function() {});
       assert.strictEqual(Extended.from, Promise.from);
       assert.strictEqual(Extended.rejected, Promise.rejected);
+      assert.strictEqual(Extended.all, Promise.all);
+      assert.strictEqual(Extended.any, Promise.any);
+      assert.strictEqual(Extended.some, Promise.some);
     });
 
     it('sets up an `isInstance()` helper', function() {
