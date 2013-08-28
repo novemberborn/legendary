@@ -128,6 +128,12 @@ describe('Subclassing', function() {
       assert.strictEqual(Extended.rejected, Promise.rejected);
     });
 
+    it('sets up an `isInstance()` helper', function() {
+      var Extended = blessed.extended(function() {});
+      assert.isTrue(Extended.isInstance(new Extended()));
+      assert.isFalse(Extended.isInstance(Promise.from()));
+    });
+
     it('takes a base class argument', function() {
       var Base = blessed.extended(function() {});
       var Extended = blessed.extended(function() {}, Base);

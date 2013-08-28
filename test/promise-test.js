@@ -6,6 +6,16 @@ var sentinels = require('./sentinels');
 
 var Promise = require('../').Promise;
 
+describe('Promise.isInstance(value)', function() {
+  it('returns true for Promise instances', function() {
+    assert.isTrue(Promise.isInstance(Promise.from()));
+  });
+
+  it('returns false for non-Promise instances', function() {
+    assert.isFalse(Promise.isInstance({ then: function() {} }));
+  });
+});
+
 describe('Promise.from(value)', function() {
   it('returns a promise that is an instance of Promise', function() {
     assert.instanceOf(Promise.from(sentinels.one), Promise);
