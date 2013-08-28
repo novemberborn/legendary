@@ -18,7 +18,7 @@ var patterns = [];
 if (process.argv[2]) {
   patterns.push(process.argv[2]);
 } else {
-  patterns.push('*-test.js');
+  patterns.push('**/*-test.js');
 }
 
 var path = require('path');
