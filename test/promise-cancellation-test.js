@@ -5,7 +5,7 @@ var sinon = require('sinon');
 var sentinels = require('./sentinels');
 
 var Promise = require('../').Promise;
-var CancelError = require('../').CancelError;
+var CancellationError = require('../').CancellationError;
 
 function identity(x) { return x; }
 
@@ -24,7 +24,7 @@ function constant(value) {
 }
 
 function assertCancelled(promise) {
-  return assert.isRejected(promise, CancelError);
+  return assert.isRejected(promise, CancellationError);
 }
 
 describe('Cancellation', function() {
@@ -41,7 +41,7 @@ describe('Cancellation', function() {
       return assert.eventually.strictEqual(invert(promise), sentinels.one);
     });
 
-    it('rejects a pending promise with a CancelError', function() {
+    it('rejects a pending promise with a CancellationError', function() {
       var promise = new Promise(function() {});
       promise.cancel();
       return assertCancelled(promise);
