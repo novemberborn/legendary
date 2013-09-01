@@ -15,7 +15,9 @@ function SubPromise(resolver) {
     return new SubPromise(resolver);
   }
 
-  blessed.be(this, resolver);
+  if (resolver !== blessed.be) {
+    blessed.be(this, resolver);
+  }
 }
 SubPromise.prototype = new Promise(blessed.be);
 SubPromise.prototype.constructor = SubPromise;
@@ -84,6 +86,37 @@ describe('Subclassing', function() {
           }).then(identity);
           assert.instanceOf(chain, SubPromise);
         });
+
+    describe('can be configured to return a different subclass', function() {
+      var OtherPromise = blessed.extended(function OtherPromise(resolver) {
+        if (resolver !== blessed.be) {
+          blessed.be(this, resolver, true, SubPromise);
+        }
+      });
+
+      it('duly returns an instance of that other class', function() {
+        var p1 = new OtherPromise(function(resolve) {
+          resolve(sentinels.one);
+        });
+        var p2 = p1.then(identity);
+
+        assert.notInstanceOf(p2, OtherPromise);
+        assert.instanceOf(p2, SubPromise);
+
+        return assert.eventually.strictEqual(p2, sentinels.one);
+      });
+
+      it('does not shortcut when called without callbacks', function() {
+        var p1 = new OtherPromise(function(resolve) {
+          resolve(sentinels.one);
+        });
+        var p2 = p1.then();
+
+        assert.notStrictEqual(p1, p2);
+        assert.notInstanceOf(p2, OtherPromise);
+        assert.instanceOf(p2, SubPromise);
+      });
+    });
   });
 
   describe('resolve()', function() {
