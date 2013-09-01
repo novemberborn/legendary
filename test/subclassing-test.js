@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('chai').assert;
+var sentinels = require('./sentinels');
 
 var blessed = require('../lib/blessed');
 var Promise = require('../').Promise;
@@ -30,10 +31,8 @@ function defer(constructor) {
 
 function identity(x) { return x; }
 
-var sentinel = {};
-
 describe('Subclassing', function() {
-  describe('#then()', function() {
+  describe('Promise#then()', function() {
     it('preserves subclass when called on a pending promise', function() {
       var chain = defer(SubPromise).promise.then(identity);
       assert.instanceOf(chain, SubPromise);
@@ -50,7 +49,7 @@ describe('Subclassing', function() {
     it('preserves subclass when onFulfilled callback returns value',
         function() {
           var dfd = defer(SubPromise);
-          dfd.resolve(sentinel);
+          dfd.resolve(sentinels.one);
           // Internally, the first then creates a fulfilled propagator.
           // The second then() also creates a fulfilled propagator which
           // must yield a promise of the same subclass.
@@ -92,23 +91,58 @@ describe('Subclassing', function() {
         function() {
           var dfd1 = defer(SubPromise);
           var dfd2 = defer(SubPromise);
-          dfd2.resolve(sentinel);
+          dfd2.resolve(sentinels.one);
           dfd1.resolve(dfd2.promise);
           var state = dfd1.promise.inspectState();
           assert(state.isFulfilled);
-          assert.strictEqual(state.value, sentinel);
+          assert.strictEqual(state.value, sentinels.one);
         });
 
     it('synchronously adopts state of a promise of a different subclass',
         function() {
           var dfd1 = defer(SubPromise);
           var dfd2 = defer(Promise);
-          dfd2.resolve(sentinel);
+          dfd2.resolve(sentinels.one);
           dfd1.resolve(dfd2.promise);
           var state = dfd1.promise.inspectState();
           assert(state.isFulfilled);
-          assert.strictEqual(state.value, sentinel);
+          assert.strictEqual(state.value, sentinels.one);
         });
 
+  });
+
+  describe('blessed.extended helper', function() {
+    it('sets up inheritance', function() {
+      var Extended = blessed.extended(function() {});
+      assert.instanceOf(new Extended(), Promise);
+    });
+
+    it('keeps the constructor reference intact', function() {
+      var Extended = blessed.extended(function() {});
+      assert.strictEqual(new Extended().constructor, Extended);
+    });
+
+    it('copies constructor methods from Promise', function() {
+      var Extended = blessed.extended(function() {});
+      assert.strictEqual(Extended.from, Promise.from);
+      assert.strictEqual(Extended.rejected, Promise.rejected);
+      assert.strictEqual(Extended.all, Promise.all);
+      assert.strictEqual(Extended.any, Promise.any);
+      assert.strictEqual(Extended.some, Promise.some);
+      assert.strictEqual(Extended.join, Promise.join);
+    });
+
+    it('sets up an `isInstance()` helper', function() {
+      var Extended = blessed.extended(function() {});
+      assert.isTrue(Extended.isInstance(new Extended()));
+      assert.isFalse(Extended.isInstance(Promise.from()));
+    });
+
+    it('takes a base class argument', function() {
+      var Base = blessed.extended(function() {});
+      var Extended = blessed.extended(function() {}, Base);
+      assert.instanceOf(new Extended(), Promise);
+      assert.instanceOf(new Extended(), Base);
+    });
   });
 });
