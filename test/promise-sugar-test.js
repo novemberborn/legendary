@@ -394,3 +394,14 @@ describe('Promise#send(methodName, ...args)', function() {
             });
       });
 });
+
+describe('Promise#prop(name)', function() {
+  resultsInCorrectSubclass('prop', 'noop');
+
+  it('returns the property named `name` from the eventual promise value',
+      function() {
+        return assert.eventually.strictEqual(
+            Promise.from({ foo: sentinels.one }).prop('foo'),
+            sentinels.one);
+      });
+});
