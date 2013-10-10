@@ -16,11 +16,11 @@ sinon.clock.immediate = function() {
   var firstException;
   while (timer) {
     if (this.timeouts[timer.id]) {
-        try {
-          this.callTimer(timer);
-        } catch (e) {
-          firstException = firstException || e;
-        }
+      try {
+        this.callTimer(timer);
+      } catch (e) {
+        firstException = firstException || e;
+      }
     }
 
     timer = this.firstTimerInRange(-Infinity, -Infinity);
