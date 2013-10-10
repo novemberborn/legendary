@@ -2,15 +2,15 @@
 
 var Promise = require('../').Promise;
 
-exports.pending = function() {
+exports.deferred = function() {
   var deferred = {};
   deferred.promise = new Promise(function(resolve, reject) {
-    deferred.fulfill = resolve;
+    deferred.resolve = resolve;
     deferred.reject = reject;
   });
   return deferred;
 };
-exports.fulfilled = function(value) {
+exports.resolved = function(value) {
   return Promise.from(value);
 };
 exports.rejected = function(reason) {
