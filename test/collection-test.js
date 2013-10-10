@@ -8,6 +8,7 @@ var util = require('./util');
 var Promise = require('../').Promise;
 var Collection = require('../').Collection;
 var CancellationError = require('../').CancellationError;
+var delay = require('../').timed.delay;
 
 var blessed = require('../lib/blessed');
 function SubCollection(resolver) {
@@ -165,7 +166,7 @@ describe('Collection#mapLimited()', function() {
         }
       });
 
-      return Promise.from().then(function() {
+      return delay().then(function() {
         // Given concurrency of 2, previous and the *next*
         // iterator should have been called.
         allSpies.forEach(function(spy, spyIndex) {

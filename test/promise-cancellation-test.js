@@ -113,8 +113,11 @@ describe('Cancellation', function() {
           derived.then(null, rejectedSpy);
 
           return promise.then(function() {
-            assert.callOrder(fulfilledSpy, rejectedSpy);
+            assert.calledOnce(fulfilledSpy);
+            assert.notCalled(rejectedSpy);
             return assertCancelled(derived);
+          }).then(function() {
+            assert.calledOnce(rejectedSpy);
           });
         });
 

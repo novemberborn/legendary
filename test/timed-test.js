@@ -51,7 +51,7 @@ describe('timed.delay(milliseconds, promiseOrValue)', function() {
     assertFulfilled(delayed, sentinels.one);
   });
 
-  it('resolves after input promise plus delay', function() {
+  it('resolves after input promise plus delay', function(done) {
     var input = new Promise(function(resolve) {
       setTimeout(resolve, 50, sentinels.one);
     });
@@ -61,13 +61,16 @@ describe('timed.delay(milliseconds, promiseOrValue)', function() {
     assertPending(delayed);
 
     clock.tick(50);
+    process.nextTick(function() {
+      assertFulfilled(input, sentinels.one);
+      assertPending(delayed);
 
-    assertFulfilled(input, sentinels.one);
-    assertPending(delayed);
-
-    clock.tick(50);
-
-    assertFulfilled(delayed, sentinels.one);
+      clock.tick(50);
+      process.nextTick(function() {
+        assertFulfilled(delayed, sentinels.one);
+        done();
+      });
+    });
   });
 
   it('does not delay if input promise is rejected', function() {
