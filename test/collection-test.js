@@ -28,6 +28,7 @@ blessed.extended(SubCollection, Collection);
 
 function identity(x) { return x; }
 function thrower(x) { throw x; }
+function truthy(x) { return !!x; }
 
 function determineMaxConcurrent(method) {
   if (/Series$/.test(method)) {
@@ -274,7 +275,7 @@ testIterators(
     function(callMethod) {
       it('returns the filtered items', function() {
         var arr = ['', 'foo', 0, 1, {}, [], null, undefined, true, false];
-        var result = callMethod(Collection.from(arr), identity);
+        var result = callMethod(Collection.from(arr), truthy);
         return assert.eventually.deepEqual(result, ['foo', 1, {}, [], true]);
       });
     });
@@ -284,7 +285,7 @@ testIterators(
     function(callMethod) {
       it('returns the non-filtered-out items', function() {
         var arr = ['', 'foo', 0, 1, {}, [], null, undefined, true, false];
-        var result = callMethod(Collection.from(arr), identity);
+        var result = callMethod(Collection.from(arr), truthy);
         return assert.eventually.deepEqual(
             result, ['', 0, null, undefined, false]);
       });
