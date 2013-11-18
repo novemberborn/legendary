@@ -83,7 +83,7 @@ function usesMapLimited(callMethod, maxConcurrent) {
         var spy = sinon.spy(collection, 'mapLimited');
         callMethod(collection, identity);
         assert.calledOnce(spy);
-        assert.calledWithExactly(spy, maxConcurrent, identity);
+        assert.calledWithExactly(spy, maxConcurrent, sinon.match.func);
       });
 }
 
