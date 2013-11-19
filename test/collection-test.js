@@ -28,6 +28,7 @@ blessed.extended(SubCollection, Collection);
 
 function identity(x) { return x; }
 function thrower(x) { throw x; }
+function truthy(x) { return Promise.isInstance(x) ? x.then(truthy) : !!x; }
 
 function determineMaxConcurrent(method) {
   if (/Series$/.test(method)) {
@@ -83,7 +84,7 @@ function usesMapLimited(callMethod, maxConcurrent) {
         var spy = sinon.spy(collection, 'mapLimited');
         callMethod(collection, identity);
         assert.calledOnce(spy);
-        assert.calledWithExactly(spy, maxConcurrent, identity);
+        assert.calledWithExactly(spy, maxConcurrent, sinon.match.func);
       });
 }
 
@@ -273,9 +274,13 @@ testIterators(
     ['filter', 'filterSeries', 'filterLimited'],
     function(callMethod) {
       it('returns the filtered items', function() {
-        var arr = ['', 'foo', 0, 1, {}, [], null, undefined, true, false];
-        var result = callMethod(Collection.from(arr), identity);
-        return assert.eventually.deepEqual(result, ['foo', 1, {}, [], true]);
+        var arr = [
+          '', 'foo', 0, 1, {}, [], null, undefined, true, false,
+          Promise.from('bar'), Promise.from(false)
+        ];
+        var result = callMethod(Collection.from(arr), truthy);
+        return assert.eventually.deepEqual(
+            result, ['foo', 1, {}, [], true, 'bar']);
       });
     });
 
@@ -283,10 +288,13 @@ testIterators(
     ['filterOut', 'filterOutSeries', 'filterOutLimited'],
     function(callMethod) {
       it('returns the non-filtered-out items', function() {
-        var arr = ['', 'foo', 0, 1, {}, [], null, undefined, true, false];
-        var result = callMethod(Collection.from(arr), identity);
+        var arr = [
+          '', 'foo', 0, 1, {}, [], null, undefined, true, false,
+          Promise.from('bar'), Promise.from(false)
+        ];
+        var result = callMethod(Collection.from(arr), truthy);
         return assert.eventually.deepEqual(
-            result, ['', 0, null, undefined, false]);
+            result, ['', 0, null, undefined, false, false]);
       });
     });
 
