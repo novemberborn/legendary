@@ -85,15 +85,15 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
     });
   });
 
-  it('resolves to initial arguments when no tasks are supplied', function() {
-    return assert.eventually.deepEqual(
-        concurrent.pipeline.apply(concurrent, [[]].concat(sentinels.arr())),
-        sentinels.arr());
+  it('resolves to undefined when no tasks are supplied', function() {
+    return assert.eventually.isUndefined(
+      concurrent.pipeline.apply(concurrent, [[]].concat(sentinels.arr()))
+    );
   });
 
-  it('resolves to empty array when no tasks or arguments are supplied',
+  it('resolves to undefined when no tasks or arguments are supplied',
       function() {
-        return assert.eventually.deepEqual(concurrent.pipeline([]), []);
+        return assert.eventually.isUndefined(concurrent.pipeline([]));
       });
 
   it('passes arguments to initial task', function() {
