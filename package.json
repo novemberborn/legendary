@@ -27,7 +27,8 @@
     "sinon": "~1.7.3"
   },
   "scripts": {
-    "test": "test/runner.js"
+    "test": "test/runner.js",
+    "doc": "groc"
   },
   "engines": {
     "node": ">=0.10.0"
