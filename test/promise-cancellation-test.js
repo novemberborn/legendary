@@ -8,6 +8,7 @@ var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
 
 function identity(x) { return x; }
+function thrower(x) { throw x; }
 
 function invert(promise) {
   return promise.then(function(value) {
@@ -193,6 +194,16 @@ describe('Cancellation', function() {
             assert.notCalled(spy);
           });
         });
+
+    it('creates a new promise that can be cancelled after a callback is added',
+      function() {
+        var spy = sinon.spy();
+        var promise = new Promise(constant(spy));
+        var forked = promise.fork();
+        var derived = forked.then(identity, thrower);
+        forked.cancel();
+        return assertCancelled(derived);
+      });
   });
 
   describe('Promise#uncancellable()', function() {
