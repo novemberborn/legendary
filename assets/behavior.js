@@ -9,16 +9,12 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
       "type": "file",
       "data": {
         "language": {
-          "nameMatchers": [".js"],
-          "pygmentsLexer": "javascript",
-          "multiLineComment": ["/*", "*", "*/"],
-          "singleLineComment": ["//"],
-          "ignorePrefix": "}",
-          "foldPrefix": "^",
-          "name": "JavaScript"
+          "nameMatchers": [".md"],
+          "commentsOnly": true,
+          "name": "Markdown"
         },
-        "sourcePath": "/Users/mark/Code/GitHub/novemberborn/legendary/index.js",
-        "projectPath": "index.js",
+        "sourcePath": "/Users/mark/Dropbox/Sync/Code/GitHub/novemberborn/legendary/README.md",
+        "projectPath": "README.md",
         "targetPath": "index",
         "pageTitle": "index",
         "title": "index"
@@ -29,8 +25,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "API",
-            "slug": "api"
+            "title": "Legendary",
+            "slug": "legendary"
           },
           "depth": 1,
           "children": [
@@ -38,8 +34,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Promise",
-                "slug": "promise"
+                "title": "Installation",
+                "slug": "installation"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Usage",
+                "slug": "usage"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Theme song",
+                "slug": "theme-song"
               },
               "depth": 2
             }
@@ -66,7 +78,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/mark/Code/GitHub/novemberborn/legendary/lib/CancellationError.js",
+            "sourcePath": "/Users/mark/Dropbox/Sync/Code/GitHub/novemberborn/legendary/lib/CancellationError.js",
             "projectPath": "lib/CancellationError.js",
             "targetPath": "lib/CancellationError",
             "pageTitle": "lib/CancellationError",
@@ -96,7 +108,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/mark/Code/GitHub/novemberborn/legendary/lib/legendary.js",
+            "sourcePath": "/Users/mark/Dropbox/Sync/Code/GitHub/novemberborn/legendary/lib/legendary.js",
             "projectPath": "lib/legendary.js",
             "targetPath": "lib/legendary",
             "pageTitle": "lib/legendary",
@@ -114,6 +126,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 1,
               "children": [
                 {
+                  "type": "heading",
+                  "data": {
+                    "level": 2,
+                    "title": "Promise",
+                    "slug": "promise"
+                  },
+                  "depth": 2
+                }, {
+                  "type": "heading",
+                  "data": {
+                    "level": 2,
+                    "title": "CancellationError",
+                    "slug": "cancellationerror"
+                  },
+                  "depth": 2
+                }, {
                   "type": "heading",
                   "data": {
                     "level": 2,
@@ -137,7 +165,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/Users/mark/Code/GitHub/novemberborn/legendary/lib/promises.js",
+            "sourcePath": "/Users/mark/Dropbox/Sync/Code/GitHub/novemberborn/legendary/lib/promises.js",
             "projectPath": "lib/promises.js",
             "targetPath": "lib/promises",
             "pageTitle": "lib/promises",

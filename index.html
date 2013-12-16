@@ -1,14 +1,18 @@
-<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="index.js"><meta name="groc-github-url" content="https://github.com/novemberborn/legendary"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/novemberborn/legendary/blob/master/index.js">index.js</a></div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="s1">&#39;use strict&#39;</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h1 id="api">API</h1></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Exports the <a href="./lib/legendary.html"><code>lib/legendary</code></a> module, with additions.</p></div></div><div class="code"><div class="wrapper"><span class="nx">exports</span> <span class="o">=</span> <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/legendary&#39;</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="promise">Promise</h2>
+<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><meta name="groc-github-url" content="https://github.com/novemberborn/legendary"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/novemberborn/legendary/blob/master/README.md">README.md</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p><a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" alt="Promises/A+ logo" align="right"></a></p>
 
-<p>A <a href="http://promisesaplus.com/">Promise/A+</a> compatible promise constructor,
-with additional functionality such as support for subclassing, helper methods
-on the constructor and extra instance methods.
-<a href="./lib/promises.html#promise">Read more</a>.</p></div></div><div class="code"><div class="wrapper"><span class="nx">exports</span><span class="p">.</span><span class="nx">Promise</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/promises&#39;</span><span class="p">).</span><span class="nx">Promise</span><span class="p">;</span>
-<span class="nx">exports</span><span class="p">.</span><span class="nx">Collection</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/collections&#39;</span><span class="p">).</span><span class="nx">Collection</span><span class="p">;</span>
+<h1 id="legendary">Legendary</h1>
 
-<span class="nx">exports</span><span class="p">.</span><span class="nx">CancellationError</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/CancellationError&#39;</span><span class="p">);</span>
-<span class="nx">exports</span><span class="p">.</span><span class="nx">TimeoutError</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/TimeoutError&#39;</span><span class="p">);</span>
+<p>Legendary is a <a href="http://promises-aplus.github.com/promises-spec">Promises/A+</a> compatible promise implementation. It combines promise subclassing with sugar inspired by <a href="https://github.com/cujojs/when">when.js</a>, <a href="https://github.com/kriskowal/q">Q</a> and <a href="https://github.com/caolan/async">async</a>.</p>
 
-<span class="nx">exports</span><span class="p">.</span><span class="nx">timed</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/timed&#39;</span><span class="p">);</span>
-<span class="nx">exports</span><span class="p">.</span><span class="nx">concurrent</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/concurrent&#39;</span><span class="p">);</span>
-<span class="nx">exports</span><span class="p">.</span><span class="nx">fn</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;./lib/fn&#39;</span><span class="p">);</span></div></div></div></div></body></html>
+<h2 id="installation">Installation</h2>
+
+<pre><code class="js">npm install legendary
+</code></pre>
+
+<h2 id="usage">Usage</h2>
+
+<p>See <a href="http://novemberborn.github.com/legendary/lib/legendary.html">API Docs</a>.</p>
+
+<h2 id="theme-song">Theme song</h2>
+
+<p><a href="https://soundcloud.com/buck65/legendary">Legendary</a> by <a href="http://buck65.com">Buck 65</a>.</p></div></div></div></div></body></html>

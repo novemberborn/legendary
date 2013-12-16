@@ -239,8 +239,11 @@ array, or an object with fewer keys than <code>input</code>.</p></div></div><div
  then(function(value) {
    console.log('value:', value);
  });
-</code></pre></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Please note that only those methods documented as free functions can be
-called as such.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">then</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</code></pre></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Behaves the same as:</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> promise.then(function(value) {
+   console.log('value:', value);
+ });
+</code></pre></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><strong>Please note that only those methods documented as free functions can be
+called as such.</strong></p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">then</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="k">return</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{});</span>
 <span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="promiseinspectstate">Promise#inspectState()</h2>
 
@@ -274,7 +277,15 @@ but does not attempt to invoke a <code>cancel</code> method on that thenable.</p
 
 <p>Forks the promise so that resolution will propagate into the returned
 promise, but cancellation of that promise will not affect the original
-promise.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fork</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+promise:</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var forked = promise.fork();
+ promise.then(null, function(reason) {
+   console.log("original promise rejected:", reason.name);
+ });
+ forked.then(null, function(reason) {
+   console.log("returned promise rejected:", reason.name);
+ });
+ forked.cancel(); // Logs: returned promise rejected: cancel
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">fork</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="c1">//For `fork()` and `uncancellable()` we resolve the propagator with a</span>
   <span class="c1">//thenable. Passing a promise would lead it to attempt to adopt state</span>
   <span class="c1">//synchonously, and propagate cancellation to the current promise.</span>
@@ -285,18 +296,29 @@ promise.</p></div></div><div class="code"><div class="wrapper"><span class="nx">
 
 <p>Forks the promise so that resolution will propagate into the returned
 promise, but that returned promise nor any promise derived from it can be
-cancelled.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">uncancellable</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+cancelled.</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var uncancellable = promise.uncancellable();
+ promise.then(null, function(reason) {
+   console.log("original promise rejected:", reason.name);
+ });
+ uncancellable.then(null, function(reason) {
+   console.log("returned promise rejected:", reason.name);
+ });
+ uncancellable.cancel(); // Logs nothing
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">uncancellable</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="k">return</span> <span class="k">new</span> <span class="nx">ResolutionPropagator</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">constructor</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="kc">false</span><span class="p">).</span><span class="nx">resolve</span><span class="p">(</span>
     <span class="kc">false</span><span class="p">,</span> <span class="p">{</span> <span class="nx">then</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span> <span class="p">}</span>
   <span class="p">).</span><span class="nx">promise</span><span class="p">();</span>
 <span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="promisetoconstructor">Promise#to(constructor)</h2>
 
 <p>Returns a promise of type <code>constructor</code> which will adopt the state of the
-current promise. Useful for type conversions, for example:</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var promise = Promise.from([0, 1, 2, 3, 4]);
+current promise. Useful for type conversions, for example if we have a
+promise for an array we can convert it into a
+<a href="./collections.html#collection"><code>Collection</code></a> promise like this:</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var promise = Promise.from([0, 1, 2, 3, 4]);
  var collection = promise.to(Collection);
- var odd = collection.filter(function(n) {
+</code></pre></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>And then we can use the helper methods from <code>Collection</code> to filter the array:</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var odd = collection.filter(function(n) {
    return n % 2;
  });
+ odd.then(console.log); // Logs: [ 1, 3 ]
 </code></pre></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Assumes <code>constructor</code> has a <code>from</code> method, like
 <a href="#promisefromvalue"><code>Promise.from()</code></a>.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">to</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">constructor</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="nx">constructor</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
@@ -324,7 +346,13 @@ promise is fulfilled.</p></div></div><div class="code"><div class="wrapper"><spa
 <span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="promiseyieldreasonreason">Promise#yieldReason(reason)</h2>
 
 <p>Returns a new promise which will reject with <code>reason</code>, provided the original
-promise is fulfilled.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">yieldReason</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+promise is fulfilled.</p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><pre><code> var fulfilled = Promise.from(42);
+ var rejected = fulfilled.yieldReason(
+   new Error("We apologise for the inconvenience"));
+ rejected.then(null, function(reason) {
+   console.log(reason.message);
+ }); // Logs: We apologise for the inconvenience
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">yieldReason</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">throw</span> <span class="nx">reason</span><span class="p">;</span>
   <span class="p">});</span>
