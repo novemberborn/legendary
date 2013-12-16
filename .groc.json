@@ -1,5 +1,5 @@
 {
-  "glob": ["index.js", "lib/legendary.js", "lib/promises.js", "lib/CancellationError.js"],
+  "glob": ["README.md", "lib/legendary.js", "lib/promises.js", "lib/CancellationError.js"],
   "github": false,
   "repository-url": "https://github.com/novemberborn/legendary"
 }

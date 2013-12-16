@@ -28,7 +28,8 @@
   },
   "scripts": {
     "test": "test/runner.js",
-    "doc": "groc"
+    "doc": "groc",
+    "doc-publish": "groc --github"
   },
   "engines": {
     "node": ">=0.10.0"
