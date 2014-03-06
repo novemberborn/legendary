@@ -48,6 +48,11 @@ window.files = [
     },
     {
       "level": 2,
+      "slug": "series",
+      "title": "Series"
+    },
+    {
+      "level": 2,
       "slug": "cancellationerror",
       "title": "CancellationError"
     },
@@ -210,6 +215,121 @@ window.files = [
       "level": 2,
       "slug": "promise-prop-name-",
       "title": "Promise#prop(name)"
+    }
+  ]
+},
+{
+  "path": "lib/series.js.html",
+  "originalName": "series.js",
+  "originalPath": "lib/series.js",
+  "name": "series.js.html",
+  "lang": "javascript",
+  "title": "Series",
+  "toc": [
+    {
+      "level": 1,
+      "slug": "series",
+      "title": "Series"
+    },
+    {
+      "level": 2,
+      "slug": "series-map-iterator-",
+      "title": "Series#map(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-mapparallel-maxconcurrent-iterator-",
+      "title": "Series#mapParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-each-iterator-",
+      "title": "Series#each(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-eachparallel-maxconcurrent-iterator-",
+      "title": "Series#eachParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-filter-iterator-",
+      "title": "Series#filter(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-filterparallel-maxconcurrent-iterator-",
+      "title": "Series#filterParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-filterout-iterator-",
+      "title": "Series#filterOut(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-filteroutparallel-maxconcurrent-iterator-",
+      "title": "Series#filterOutParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-concat-iterator-",
+      "title": "Series#concat(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-concatparallel-maxconcurrent-iterator-",
+      "title": "Series#concatParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-foldl-initialvalue-iterator-",
+      "title": "Series#foldl(initialValue, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-foldr-initialvalue-iterator-",
+      "title": "Series#foldr(initialValue, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-detect-iterator-",
+      "title": "Series#detect(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-detectparallel-maxconcurrent-iterator-",
+      "title": "Series#detectParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-some-iterator-",
+      "title": "Series#some(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-someparallel-maxconcurrent-iterator-",
+      "title": "Series#someParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-every-iterator-",
+      "title": "Series#every(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-everyparallel-maxconcurrent-iterator-",
+      "title": "Series#everyParallel(maxConcurrent, iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-sortby-iterator-",
+      "title": "Series#sortBy(iterator)"
+    },
+    {
+      "level": 2,
+      "slug": "series-sortbyparallel-maxconcurrent-iterator-",
+      "title": "Series#sortByParallel(maxConcurrent, iterator)"
     }
   ]
 },
