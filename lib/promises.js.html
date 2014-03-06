@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Promise - promises.js</title>
+
+  <link rel="stylesheet" href="../assets/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+  <meta name="groc-relative-root" content="../"/>
+  <meta name="groc-document-path" content="lib/promises.js"/>
+  
+</head>
+<body>
+  <div id="file-area">
+    <div id="meta">
+      <code class="file-path">
+      
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/promises.js">lib/promises.js</a>
+      
+      </code>
+    </div>
+    <div id="document">
+    
+      <div class="segment">
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-keyword">var</span> legendary = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./legendary'</span>);
+<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./blessed'</span>);
+<span class="hljs-keyword">var</span> ResolutionPropagator = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ResolutionPropagator'</span>);
+<span class="hljs-keyword">var</span> CancellationError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./CancellationError'</span>);
+
+<span class="hljs-keyword">var</span> slice = [].slice;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h1 id="promise"><a href="#promise" class="anchor"></a>Promise</h1><p>Promise/A+ compatible promise constructor.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Promise</span><span class="hljs-params">(resolver)</span> {</span>
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> resolver !== <span class="hljs-string">'function'</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>();
+  }
+
+  <span class="hljs-keyword">if</span> (!(<span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> Promise)) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Promise(resolver);
+  }
+
+  <span class="hljs-keyword">if</span> (resolver !== blessed.be) {
+    blessed.be(<span class="hljs-keyword">this</span>, resolver, <span class="hljs-literal">true</span>);
+  }
+}
+
+exports.Promise = Promise;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">prepRace</span><span class="hljs-params">(Constructor, retry, input, race)</span> {</span>
+  <span class="hljs-keyword">if</span> (Promise.isInstance(input)) {
+    <span class="hljs-keyword">return</span> input.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(input)</span> {</span>
+      <span class="hljs-keyword">return</span> retry.call(Constructor, input);
+    });
+  }
+
+  <span class="hljs-keyword">var</span> queue, result;
+  <span class="hljs-keyword">var</span> size = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(input)) {
+    result = [];
+    queue = input.map(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(item, index)</span> {</span>
+      size++;
+      <span class="hljs-keyword">return</span> {
+        value: item,
+        key: index
+      };
+    });
+  } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (input &amp;&amp; <span class="hljs-keyword">typeof</span> input === <span class="hljs-string">'object'</span>) {
+    <span class="hljs-keyword">var</span> keys = <span class="hljs-built_in">Object</span>.keys(input);
+    result = {};
+    size = keys.length;
+    queue = keys.map(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(key)</span> {</span>
+      <span class="hljs-keyword">return</span> {
+        value: input[key],
+        key: key
+      };
+    });
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> Constructor.rejected(
+        <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">'Can\'t get values of non-object or array'</span>));
+  }
+
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Constructor(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+    race(queue, size, result, resolve, reject);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ttrue</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">invokeCancel</span><span class="hljs-params">(promise)</span> {</span>
+  promise.cancel();
+}
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-isinstance-x-"><a href="#promise-isinstance-x-" class="anchor"></a>Promise.isInstance(x)</h2><p>Checks whether a given value is an instance of this Promise class.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.isInstance = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span> {</span>
+  <span class="hljs-keyword">return</span> x <span class="hljs-keyword">instanceof</span> Promise;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-from-value-"><a href="#promise-from-value-" class="anchor"></a>Promise.from(value)</h2><p>Given any value, promise or thenable, returns a promise that is fulfilled
+with the value, adopts the promise state, or assimilates the thenable,
+respectively.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.from = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+      <span class="hljs-literal">false</span>, value
+  ).promise();
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-rejected-reason-"><a href="#promise-rejected-reason-" class="anchor"></a>Promise.rejected(reason)</h2><p>Returns a rejected promise, with <code>reason</code> as its rejection reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.rejected = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+      <span class="hljs-literal">true</span>, reason, legendary.unhandledRejection(reason)
+  ).promise();
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-races"><a href="#promise-races" class="anchor"></a>Promise Races</h2><p>Often when composing multiple promises you want to race them against each
+other. Legendary provides various types of races.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>For the following methods please keep in mind these assumptions on the
+<code>input</code> argument:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>You may pass a promise if the actual input is not yet available. The race
+will start with the fulfillment value of that promise, but if it is rejected
+so will be the returned promise.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>The input must either be an array or an object. For any other input type
+the returned promise is rejected.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>input</code> is an array each item is considered for the race. If it is an
+object, each own value is considered.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>Only promises are considered for the race; non-promises are treated as if
+they are promises fulfilled with that non-promise value. In other words, the
+non-promise is considered to be the fulfillment value of a promise that would
+otherwise have participated in the race.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li><strong>Thenables are not assimilated, but instead treated as objects</strong>. So if
+<code>input</code> is a thenable, the race result may be an object with a <code>then</code>
+function (but not the same thenable). Or if a thenable is an item in an input
+array, or an own value if an input object, it&#39;s returned as-is.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h3 id="promise-all-input-"><a href="#promise-all-input-" class="anchor"></a>Promise.all(input)</h3><p>The first promise to be rejected causes the returned promise to be rejected
+with that same reason. Otherwise fulfills with a mapping of fulfillment
+values for the input, according to its type.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.all = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(input)</span> {</span>
+  <span class="hljs-keyword">return</span> prepRace(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">this</span>.all, input,
+      <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(queue, winsRequired, result, resolve, lose)</span> {</span>
+        <span class="hljs-keyword">if</span> (winsRequired === <span class="hljs-number">0</span>) {
+          <span class="hljs-keyword">return</span> resolve(result);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">win</span><span class="hljs-params">(key, value)</span> {</span>
+          result[key] = value;
+          <span class="hljs-keyword">if</span> (--winsRequired === <span class="hljs-number">0</span>) {
+            resolve(result);
+          }
+        }
+
+        queue.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(descriptor)</span> {</span>
+          <span class="hljs-keyword">if</span> (Promise.isInstance(descriptor.value)) {
+            descriptor.value.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+              win(descriptor.key, value);
+            }, lose);
+          } <span class="hljs-keyword">else</span> {
+            win(descriptor.key, descriptor.value);
+          }
+        });
+      });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h3 id="promise-any-input-"><a href="#promise-any-input-" class="anchor"></a>Promise.any(input)</h3><p>The first promise to be fulfilled causes the returned promise to be fulfilled
+with that same value. Otherwise rejects with a mapping of rejection reasons
+for the input, according to its type.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.any = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(input)</span> {</span>
+  <span class="hljs-keyword">return</span> prepRace(<span class="hljs-keyword">this</span>, <span class="hljs-keyword">this</span>.any, input,
+      <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(queue, lossesNeeded, reasons, resolve, reject)</span> {</span>
+        <span class="hljs-keyword">if</span> (lossesNeeded === <span class="hljs-number">0</span>) {
+          <span class="hljs-keyword">return</span> resolve(<span class="hljs-literal">undefined</span>);
+        }
+
+        <span class="hljs-keyword">var</span> isWon = <span class="hljs-literal">false</span>;
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">win</span><span class="hljs-params">(value)</span> {</span>
+          <span class="hljs-keyword">if</span> (!isWon) {
+            isWon = <span class="hljs-literal">true</span>;
+            resolve(value);
+          }
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lose</span><span class="hljs-params">(key, reason)</span> {</span>
+          reasons[key] = reason;
+          <span class="hljs-keyword">if</span> (!isWon &amp;&amp; --lossesNeeded === <span class="hljs-number">0</span>) {
+            reject(reasons);
+          }
+        }
+
+        queue.some(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(descriptor)</span> {</span>
+          <span class="hljs-keyword">if</span> (Promise.isInstance(descriptor.value)) {
+            descriptor.value.then(win, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+              lose(descriptor.key, reason);
+            });
+          } <span class="hljs-keyword">else</span> {
+            win(descriptor.value);
+          }
+          <span class="hljs-keyword">return</span> isWon;
+        });
+      });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h3 id="promise-some-input-winsrequired-"><a href="#promise-some-input-winsrequired-" class="anchor"></a>Promise.some(input, winsRequired)</h3><p>Like <code>Promise.all()</code>, but the returned promise won&#39;t be rejected until it&#39;s
+no longer possible to get a number of fulfillment values equivalent to
+<code>winsRequired</code>. The returned promise is fulfilled once the total number of
+fulfillment values is equivalent to <code>winsRequired</code>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The returned promise is fulfilled with a mapping of fulfillment values for
+the input, according to its type, and similarly rejected with
+a mapping of rejection reasons. Note that the value/reason may be a sparse
+array, or an object with fewer keys than <code>input</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.some = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(input, winsRequired)</span> {</span>
+  <span class="hljs-keyword">return</span> prepRace(
+      <span class="hljs-keyword">this</span>,
+      <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(input)</span> {</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.some(input, winsRequired);
+      },
+      input,
+      <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(queue, queueSize, result, resolve, reject)</span> {</span>
+        <span class="hljs-keyword">if</span> (queueSize === <span class="hljs-number">0</span>) {
+          <span class="hljs-keyword">return</span> resolve(<span class="hljs-literal">undefined</span>);
+        }
+
+        <span class="hljs-keyword">var</span> lossesNeeded = queueSize - winsRequired + <span class="hljs-number">1</span>;
+        <span class="hljs-keyword">var</span> reasons = <span class="hljs-built_in">Array</span>.isArray(result) ? [] : {};
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">win</span><span class="hljs-params">(key, value)</span> {</span>
+          result[key] = value;
+          <span class="hljs-keyword">if</span> (--winsRequired === <span class="hljs-number">0</span>) {
+            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(result)) {
+              resolve(result.filter(ttrue));
+            } <span class="hljs-keyword">else</span> {
+              resolve(result);
+            }
+          }
+        }
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lose</span><span class="hljs-params">(key, reason)</span> {</span>
+          reasons[key] = reason;
+          <span class="hljs-keyword">if</span> (--lossesNeeded === <span class="hljs-number">0</span>) {
+            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(reasons)) {
+              reject(reasons.filter(ttrue));
+            } <span class="hljs-keyword">else</span> {
+              reject(reasons);
+            }
+          }
+        }
+
+        queue.some(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(descriptor)</span> {</span>
+          <span class="hljs-keyword">if</span> (Promise.isInstance(descriptor.value)) {
+            descriptor.value.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+              win(descriptor.key, value);
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+              lose(descriptor.key, reason);
+            });
+          } <span class="hljs-keyword">else</span> {
+            win(descriptor.key, descriptor.value);
+          }
+          <span class="hljs-keyword">return</span> winsRequired === <span class="hljs-number">0</span>;
+        });
+      });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h3 id="promise-join-input-"><a href="#promise-join-input-" class="anchor"></a>Promise.join(...input)</h3><p>Applies <code>Promise.all()</code> to the arguments array.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.join = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.all(slice.call(<span class="hljs-built_in">arguments</span>));
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-then-onfulfilled-onrejected-"><a href="#promise-then-onfulfilled-onrejected-" class="anchor"></a>Promise#then(onFulfilled, onRejected)</h2><p><code>then</code> method according to <a href="http://promisesaplus.com/">Promises/A+</a>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Can be called as a free function, without the promise instance as a
+<code>thisArg</code>. For example:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> var <span class="hljs-keyword">then</span> = promise.<span class="hljs-keyword">then</span>;
+ <span class="hljs-keyword">then</span>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span></span> {
+   console.log(<span class="hljs-string">'value:'</span>, value);
+ });
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Behaves the same as:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> promise.<span class="hljs-keyword">then</span>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span></span> {
+   console.log(<span class="hljs-string">'value:'</span>, value);
+ });
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><strong>Please note that only those methods documented as free functions can be
+called as such.</strong></p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.then = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>});
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-inspectstate-"><a href="#promise-inspectstate-" class="anchor"></a>Promise#inspectState()</h2><p>Synchronously inspects the state of the promise. Returns an object with
+<code>isFulfilled</code> and <code>isRejected</code> properties, and depending on state <code>value</code>
+or <code>reason</code>:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If both are <code>isFulfilled</code> and <code>isRejected</code> are <code>false</code>, the promise
+is <em>pending</em>.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>isFulfilled</code> is <code>true</code>, then <code>isRejected</code> will be <code>false</code>, and the
+promise is <em>fulfilled</em>. The fulfillment value is available via the <code>value</code>
+property, which does <em>not</em> exist when the promise is pending or rejected.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>isRejected</code> is <code>true</code>, then <code>isFulfilled</code> will be <code>false</code>, and the
+promise is <em>rejected</em>. The rejection reason is available via the <code>reason</code>
+property, which does <em>not</em> exist when the promise is pending or fulfilled.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Like <code>then</code>, can be called as a free function.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.inspectState = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> {
+    isFulfilled: <span class="hljs-literal">false</span>,
+    isRejected: <span class="hljs-literal">false</span>
+  };
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-cancel-"><a href="#promise-cancel-" class="anchor"></a>Promise#cancel()</h2><p>Cancels a pending promise. If the promise is no longer pending then invoking
+this method will have no side-effects.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>When cancelled, the pending promise is rejected with a
+<a href="./CancellationError.html"><code>CancellationError</code></a>. If the promise is in the
+process of adopting the state of <em>another</em> promise, the cancellation is
+propagated by invoking the <code>cancel</code> method on <em>that</em> promise. If instead the
+promise is assimilating a thenable, it merely gives up on the assimilation,
+but does not attempt to invoke a <code>cancel</code> method on that thenable.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Like <code>then</code>, can be called as a free function.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.cancel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-fork-"><a href="#promise-fork-" class="anchor"></a>Promise#fork()</h2><p>Forks the promise so that resolution will propagate into the returned
+promise, but cancellation of that promise will not affect the original
+promise:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> <span class="hljs-keyword">var</span> forked = promise.fork();
+ promise.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+   console.log(<span class="hljs-string">"original promise rejected:"</span>, reason.name);
+ });
+ forked.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+   console.log(<span class="hljs-string">"returned promise rejected:"</span>, reason.name);
+ });
+ forked.cancel(); <span class="hljs-comment">// Logs: returned promise rejected: cancel</span>
+</code></pre></div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.fork = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span></div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>For <code>fork()</code> and <code>uncancellable()</code> we resolve the propagator with a
+thenable. Passing a promise would lead it to attempt to adopt state
+synchonously, and propagate cancellation to the current promise.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+    <span class="hljs-literal">false</span>, { then: <span class="hljs-keyword">this</span>.then }
+  ).promise();
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-uncancellable-"><a href="#promise-uncancellable-" class="anchor"></a>Promise#uncancellable()</h2><p>Forks the promise so that resolution will propagate into the returned
+promise, but that returned promise nor any promise derived from it can be
+cancelled.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> <span class="hljs-keyword">var</span> uncancellable = promise.uncancellable();
+ promise.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+   console.log(<span class="hljs-string">"original promise rejected:"</span>, reason.name);
+ });
+ uncancellable.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+   console.log(<span class="hljs-string">"returned promise rejected:"</span>, reason.name);
+ });
+ uncancellable.cancel(); <span class="hljs-comment">// Logs nothing</span>
+</code></pre></div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.uncancellable = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>).resolve(
+    <span class="hljs-literal">false</span>, { then: <span class="hljs-keyword">this</span>.then }
+  ).promise();
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-to-constructor-"><a href="#promise-to-constructor-" class="anchor"></a>Promise#to(constructor)</h2><p>Returns a promise of type <code>constructor</code> which will adopt the state of the
+current promise. Useful for type conversions, for example if we have a
+promise for an array we can convert it into a <code>Collection</code> promise like this:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> <span class="hljs-keyword">var</span> promise = Promise.<span class="hljs-keyword">from</span>([<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>]);
+ <span class="hljs-keyword">var</span> collection = promise.<span class="hljs-keyword">to</span>(Collection);
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>And then we can use the helper methods from <code>Collection</code> to filter the array:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> <span class="hljs-keyword">var</span> odd = collection.filter(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(n)</span> {</span>
+   <span class="hljs-keyword">return</span> n % <span class="hljs-number">2</span>;
+ });
+ odd.then(console.log); <span class="hljs-comment">// Logs: [ 1, 3 ]</span>
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Assumes <code>constructor</code> has a <code>from</code> method, like
+<a href="#promisefromvalue"><code>Promise.from()</code></a>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.to = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(constructor)</span> {</span>
+  <span class="hljs-keyword">return</span> constructor.from(<span class="hljs-keyword">this</span>);
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-trace-label-meta-"><a href="#promise-trace-label-meta-" class="anchor"></a>Promise#trace(label, meta)</h2><p>Essentially a no-op, in that it returns the current promise, but provides a
+hook for debugging tools. Should report both transitions to fulfilled and
+rejected states.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>label</code> is expected to be a string. <code>meta</code> can be any value.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.trace = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-tracefulfilled-label-meta-"><a href="#promise-tracefulfilled-label-meta-" class="anchor"></a>Promise#traceFulfilled(label, meta)</h2><p>Like <code>trace</code>, but should only report transitions to the fulfilled state.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.traceFulfilled = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-tracerejected-label-meta-"><a href="#promise-tracerejected-label-meta-" class="anchor"></a>Promise#traceRejected(label, meta)</h2><p>Like <code>trace</code>, but should only report transitions to the rejected state.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.traceRejected = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-yield-value-"><a href="#promise-yield-value-" class="anchor"></a>Promise#yield(value)</h2><p>Returns a new promise which will fulfill with <code>value</code>, provided the original
+promise is fulfilled.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.yield = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">return</span> value;
+  });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-yieldreason-reason-"><a href="#promise-yieldreason-reason-" class="anchor"></a>Promise#yieldReason(reason)</h2><p>Returns a new promise which will reject with <code>reason</code>, provided the original
+promise is fulfilled.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code> <span class="hljs-keyword">var</span> fulfilled = Promise.from(<span class="hljs-number">42</span>);
+ <span class="hljs-keyword">var</span> rejected = fulfilled.yieldReason(
+   <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">"We apologise for the inconvenience"</span>));
+ rejected.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+   console.log(reason.message);
+ }); <span class="hljs-comment">// Logs: We apologise for the inconvenience</span>
+</code></pre></div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.yieldReason = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">throw</span> reason;
+  });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-otherwise-onrejected-"><a href="#promise-otherwise-onrejected-" class="anchor"></a>Promise#otherwise(onRejected)</h2><p>Shorthand for <code>then(null, onRejected)</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.otherwise = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(onRejected)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(<span class="hljs-literal">null</span>, onRejected);
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-ensure-onfulfilledorrejected-"><a href="#promise-ensure-onfulfilledorrejected-" class="anchor"></a>Promise#ensure(onFulfilledOrRejected)</h2><p>Invokes <code>onFulfilledOrRejected</code> when the promise leaves the pending state,
+but without any arguments. Returns a promise that adopts the original state,
+unless <code>onFulfilledOrRejected</code> throws, or returns a rejected promise, in
+which case the returned promise is rejected with that exception or reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.ensure = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(onFulfilledOrRejected)</span> {</span>
+  <span class="hljs-keyword">var</span> handler = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">return</span> onFulfilledOrRejected();
+  };
+
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(handler, handler).yield(<span class="hljs-keyword">this</span>);
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-tap-onfulfilledsideeffect-onrejectedsideeffect-"><a href="#promise-tap-onfulfilledsideeffect-onrejectedsideeffect-" class="anchor"></a>Promise#tap(onFulfilledSideEffect, onRejectedSideEffect)</h2><p>Adds <code>onFulfilledSideEffect</code> and <code>onRejectedSideEffect</code> as callbacks, like
+if <code>then</code> was used, but unless those functions throw, returns a promise that
+adopts the original state. If the callbacks do throw, the returned promise is
+rejected with that exception.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.tap = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(onFulfilledSideEffect, onRejectedSideEffect)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(onFulfilledSideEffect, onRejectedSideEffect).yield(<span class="hljs-keyword">this</span>);
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-spread-variadiconfulfilled-"><a href="#promise-spread-variadiconfulfilled-" class="anchor"></a>Promise#spread(variadicOnFulfilled)</h2><p>Assuming the current promise will be fulfilled with an array, uses
+<code>Promise.all()</code> to collect the fulfillment values and invokes
+<code>variadicOnFulfilled</code> with multiple arguments.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The returned promise will be rejected if the original promise is not
+fulfilled with an array; rejects; or if not all fulfillment values can be
+collected. See <a href="#promiseallinput"><code>Promise.all</code></a> for more detail on the
+semantics.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.spread = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(variadicOnFulfilled)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.constructor.all(<span class="hljs-keyword">this</span>).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(args)</span> {</span>
+    <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">Array</span>.isArray(args)) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">'Can\'t spread non-array value'</span>);
+    }
+
+    <span class="hljs-keyword">return</span> variadicOnFulfilled.apply(<span class="hljs-literal">undefined</span>, args);
+  });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-nodeify-callback-"><a href="#promise-nodeify-callback-" class="anchor"></a>Promise#nodeify(callback)</h2><p>Takes a Node-style callback and if the promise is fullfilled calls it with
+two arguments: <code>null</code> and the fulfillment value, and otherwise with a single
+argument: the rejection reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.nodeify = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(callback)</span> {</span>
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">'function'</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+  }
+
+  <span class="hljs-keyword">this</span>.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+    callback(<span class="hljs-literal">null</span>, value);
+  }, callback);
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-cancelafter-milliseconds-"><a href="#promise-cancelafter-milliseconds-" class="anchor"></a>Promise#cancelAfter(milliseconds)</h2><p>Returns the original promise, but schedules <code>cancel</code> to be invoked after
+<code>milliseconds</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.cancelAfter = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(milliseconds)</span> {</span>
+  setTimeout(<span class="hljs-keyword">this</span>.cancel, milliseconds);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-alsocancels-other-"><a href="#promise-alsocancels-other-" class="anchor"></a>Promise#alsoCancels(other)</h2><p>Ties the cancellation fate of <code>other</code> to that of the current promise.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>other</code> is a promise, and the current promise is cancelled, so
+will <code>other</code>.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>other</code> is an array, each item that is a promise is cancelled when the
+current promise is cancelled.</li>
+</ul>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li>If <code>other</code> is an object, each own value that is a promise is cancelled
+when the current promise is cancelled.</li>
+</ul>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.alsoCancels = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(other)</span> {</span>
+  <span class="hljs-keyword">var</span> promises;
+  <span class="hljs-keyword">if</span> (Promise.isInstance(other)) {
+    promises = [other];
+  } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(other)) {
+    promises = other.filter(Promise.isInstance);
+  } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (other &amp;&amp; <span class="hljs-keyword">typeof</span> other === <span class="hljs-string">'object'</span>) {
+    promises = <span class="hljs-built_in">Object</span>.keys(other).reduce(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(promises, key)</span> {</span>
+      <span class="hljs-keyword">var</span> promiseOrValue = other[key];
+      <span class="hljs-keyword">if</span> (Promise.isInstance(promiseOrValue)) {
+        promises.push(promiseOrValue);
+      }
+      <span class="hljs-keyword">return</span> promises;
+    }, []);
+  }
+
+  <span class="hljs-keyword">if</span> (promises &amp;&amp; promises.length &gt; <span class="hljs-number">0</span>) {
+    <span class="hljs-keyword">this</span>.then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
+      <span class="hljs-keyword">if</span> (reason <span class="hljs-keyword">instanceof</span> CancellationError) {
+        promises.forEach(invokeCancel);
+      }
+    });
+  }
+
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-send-methodname-args-"><a href="#promise-send-methodname-args-" class="anchor"></a>Promise#send(methodName, ...args)</h2><p>Invokes the method <code>methodName</code> of the fulfillment value of the current
+promise with arguments <code>args</code>, returning a promise for the result.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.send = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(methodName)</span> {</span>
+  <span class="hljs-keyword">var</span> args = slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+    <span class="hljs-keyword">return</span> value[methodName].apply(value, args);
+  });
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="promise-prop-name-"><a href="#promise-prop-name-" class="anchor"></a>Promise#prop(name)</h2><p>Returns a promise for the property <code>name</code> of the fulfillment value of the
+current promise.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.prototype.prop = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(name)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+    <span class="hljs-keyword">return</span> value[name];
+  });
+};
+</div></div>
+      
+      </div>
+    
+    </div>
+  </div>
+
+  <script src="../toc.js"></script>
+  <script src="../assets/libs.js"></script>
+  <script src="../assets/behavior.js"></script>
+</body>
+</html>
