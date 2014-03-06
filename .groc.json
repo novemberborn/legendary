@@ -8,5 +8,6 @@
   ],
   "github": false,
   "repository-url": "https://github.com/novemberborn/legendary",
-  "out": "doc/"
+  "out": "doc/",
+  "index": "README.md"
 }
