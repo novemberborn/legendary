@@ -6,25 +6,25 @@ var sentinels = require('./sentinels');
 var util = require('./util');
 
 var Promise = require('../').Promise;
-var Collection = require('../').Collection;
+var Series = require('../').Series;
 var CancellationError = require('../').CancellationError;
 var delay = require('../').timed.delay;
 
 var blessed = require('../lib/blessed');
-function SubCollection(resolver) {
+function SubSeries(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError();
   }
 
-  if (!(this instanceof SubCollection)) {
-    return new SubCollection(resolver);
+  if (!(this instanceof SubSeries)) {
+    return new SubSeries(resolver);
   }
 
   if (resolver !== blessed.be) {
     blessed.be(this, resolver, true);
   }
 }
-blessed.extended(SubCollection, Collection);
+blessed.extended(SubSeries, Series);
 
 function identity(x) { return x; }
 function thrower(x) { throw x; }
@@ -41,38 +41,38 @@ function determineMaxConcurrent(method) {
 }
 
 function makeCallMethod(method, maxConcurrent) {
-  return function(collection, iterator) {
+  return function(series, iterator) {
     if (/Limited$/.test(method)) {
-      return collection[method](maxConcurrent, iterator);
+      return series[method](maxConcurrent, iterator);
     } else {
-      return collection[method](iterator);
+      return series[method](iterator);
     }
   };
 }
 
-function resultsInCollection(callMethod) {
-  it('results in a Collection instance', function() {
-    assert.instanceOf(callMethod(Collection.from([]), identity), Collection);
+function resultsInSeries(callMethod) {
+  it('results in a Series instance', function() {
+    assert.instanceOf(callMethod(Series.from([]), identity), Series);
   });
 
   it('results in a correct instance when called on a subclass', function() {
-    assert.instanceOf(callMethod(SubCollection.from([]), identity),
-        SubCollection);
+    assert.instanceOf(callMethod(SubSeries.from([]), identity),
+        SubSeries);
   });
 }
 
 function resultsInPromise(callMethod) {
-  describe('results in a Promise instance, not Collection', function() {
+  describe('results in a Promise instance, not Series', function() {
     it('does so on success', function() {
-      var result = callMethod(Collection.from([]), identity);
+      var result = callMethod(Series.from([]), identity);
       assert.instanceOf(result, Promise);
-      assert.notInstanceOf(result, Collection);
+      assert.notInstanceOf(result, Series);
     });
 
     it('does so on failure', function() {
-      var result = callMethod(Collection.from([42]), thrower);
+      var result = callMethod(Series.from([42]), thrower);
       assert.instanceOf(result, Promise);
-      assert.notInstanceOf(result, Collection);
+      assert.notInstanceOf(result, Series);
     });
   });
 }
@@ -80,49 +80,49 @@ function resultsInPromise(callMethod) {
 function usesMapLimited(callMethod, maxConcurrent) {
   it('uses #mapLimited(' + maxConcurrent + ', iterator) under the hood',
       function() {
-        var collection = Collection.from([42]);
-        var spy = sinon.spy(collection, 'mapLimited');
-        callMethod(collection, identity);
+        var series = Series.from([42]);
+        var spy = sinon.spy(series, 'mapLimited');
+        callMethod(series, identity);
         assert.calledOnce(spy);
         assert.calledWithExactly(spy, maxConcurrent, sinon.match.func);
       });
 }
 
-describe('Collection', function() {
-  util.testConstructor(Collection);
+describe('Series', function() {
+  util.testConstructor(Series);
 });
 
-describe('Collection#mapLimited()', function() {
+describe('Series#mapLimited()', function() {
   describe('promises an empty array unless it receives a ' +
       'non-empty array value',
       function() {
         it('does so for an empty array', function() {
-          var result = Collection.from([]).mapLimited(1, identity);
+          var result = Series.from([]).mapLimited(1, identity);
           return assert.eventually.deepEqual(result, []);
         });
 
         it('does so for a non-array', function() {
-          var result = Collection.from(42).mapLimited(1, identity);
+          var result = Series.from(42).mapLimited(1, identity);
           return assert.eventually.deepEqual(result, []);
         });
       });
 
-  resultsInCollection(function(collection, iterator) {
-    return collection.mapLimited(2, iterator);
+  resultsInSeries(function(series, iterator) {
+    return series.mapLimited(2, iterator);
   });
 
   it('returns a rejected promise if `maxConcurrent` isn’t a number',
       function() {
-        return assert.isRejected(Collection.from([1]).mapLimited(), TypeError);
+        return assert.isRejected(Series.from([1]).mapLimited(), TypeError);
       });
 
   it('returns a rejected promise if `iterator` isn’t a function',
       function() {
-        return assert.isRejected(Collection.from([1]).mapLimited(1), TypeError);
+        return assert.isRejected(Series.from([1]).mapLimited(1), TypeError);
       });
 
   it('promises rejection if the iterator throws', function() {
-    var result = Collection.from([sentinels.one]).mapLimited(1, thrower);
+    var result = Series.from([sentinels.one]).mapLimited(1, thrower);
     return assert.isRejected(result, sentinels.Sentinel);
   });
 
@@ -130,13 +130,13 @@ describe('Collection#mapLimited()', function() {
       'returned by the iterator',
       function() {
         var arr = [null, Promise.rejected(sentinels.one), Promise.rejected()];
-        var result = Collection.from(arr).mapLimited(1, identity);
+        var result = Series.from(arr).mapLimited(1, identity);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
   it('calls iterator with item, in order', function() {
     var spy = sinon.spy();
-    return Collection.from(sentinels.arr()).mapLimited(1, spy)
+    return Series.from(sentinels.arr()).mapLimited(1, spy)
       .then(function() {
         assert.calledThrice(spy);
         assert.deepEqual(spy.firstCall.args, [sentinels.one]);
@@ -147,7 +147,7 @@ describe('Collection#mapLimited()', function() {
 
   it('returns the result of the map operation', function() {
     var arr = [2, 4, 8];
-    var result = Collection.from(arr).mapLimited(1, function(value) {
+    var result = Series.from(arr).mapLimited(1, function(value) {
       if (value < 8) {
         return value * value;
       }
@@ -186,7 +186,7 @@ describe('Collection#mapLimited()', function() {
     }
 
     var index = 0;
-    return Collection.from(spies).mapLimited(2, function(spy) {
+    return Series.from(spies).mapLimited(2, function(spy) {
       return spy(index++, spies);
     });
   });
@@ -198,7 +198,7 @@ describe('Collection#mapLimited()', function() {
         result.cancel();
       }
     });
-    var result = Collection.from(arr).mapLimited(1, spy);
+    var result = Series.from(arr).mapLimited(1, spy);
     return assert.isRejected(result, CancellationError).then(function() {
       assert.calledTwice(spy);
     });
@@ -208,7 +208,7 @@ describe('Collection#mapLimited()', function() {
     var p1 = new Promise(function() {});
     var p2 = new Promise(function() {});
     var arr = sentinels.arr();
-    var result = Collection.from(arr).mapLimited(3, function(x) {
+    var result = Series.from(arr).mapLimited(3, function(x) {
       if (x === sentinels.one) {
         return x;
       }
@@ -228,16 +228,16 @@ describe('Collection#mapLimited()', function() {
   });
 });
 
-function testIterators(methods, describeMore, doesResultInCollection) {
+function testIterators(methods, describeMore, doesResultInSeries) {
   methods.forEach(function(method) {
     var maxConcurrent = determineMaxConcurrent(method);
     var callMethod = makeCallMethod(method, maxConcurrent);
 
-    describe('Collection#' + method + '()', function() {
+    describe('Series#' + method + '()', function() {
       usesMapLimited(callMethod, maxConcurrent);
 
-      if (doesResultInCollection !== false) {
-        resultsInCollection(callMethod);
+      if (doesResultInSeries !== false) {
+        resultsInSeries(callMethod);
       } else {
         resultsInPromise(callMethod);
       }
@@ -252,17 +252,17 @@ function testIterators(methods, describeMore, doesResultInCollection) {
 testIterators(['each', 'eachSeries', 'eachLimited'], function(callMethod) {
   describe('promises undefined regardless of value', function() {
     it('does so for an empty array', function() {
-      var result = callMethod(Collection.from([]), identity);
+      var result = callMethod(Series.from([]), identity);
       return assert.eventually.isUndefined(result);
     });
 
     it('does so for a non-empty array', function() {
-      var result = callMethod(Collection.from([42]), identity);
+      var result = callMethod(Series.from([42]), identity);
       return assert.eventually.isUndefined(result);
     });
 
     it('does so for a non-array', function() {
-      var result = callMethod(Collection.from(42), identity);
+      var result = callMethod(Series.from(42), identity);
       return assert.eventually.isUndefined(result);
     });
   });
@@ -278,7 +278,7 @@ testIterators(
           '', 'foo', 0, 1, {}, [], null, undefined, true, false,
           Promise.from('bar'), Promise.from(false)
         ];
-        var result = callMethod(Collection.from(arr), truthy);
+        var result = callMethod(Series.from(arr), truthy);
         return assert.eventually.deepEqual(
             result, ['foo', 1, {}, [], true, 'bar']);
       });
@@ -292,7 +292,7 @@ testIterators(
           '', 'foo', 0, 1, {}, [], null, undefined, true, false,
           Promise.from('bar'), Promise.from(false)
         ];
-        var result = callMethod(Collection.from(arr), truthy);
+        var result = callMethod(Series.from(arr), truthy);
         return assert.eventually.deepEqual(
             result, ['', 0, null, undefined, false, false]);
       });
@@ -303,7 +303,7 @@ testIterators(
     function(callMethod) {
       it('returns the concatenated items', function() {
         var arr = ['foo', ['bar'], ['baz', 'thud']];
-        var result = callMethod(Collection.from(arr), identity);
+        var result = callMethod(Series.from(arr), identity);
         return assert.eventually.deepEqual(
             result, ['foo', 'bar', 'baz', 'thud']);
       });
@@ -312,9 +312,9 @@ testIterators(
 ['foldl', 'foldr'].forEach(function(method) {
   var fromLeft = method === 'foldl';
 
-  describe('Collection#' + method + '()', function() {
-    resultsInPromise(function(collection, iterator) {
-      return Collection.from([])[method](null, iterator);
+  describe('Series#' + method + '()', function() {
+    resultsInPromise(function(series, iterator) {
+      return Series.from([])[method](null, iterator);
     });
 
     describe('promises the memo value unless it receives a ' +
@@ -322,7 +322,7 @@ testIterators(
         function() {
           it('does so for an empty array', function() {
             var spy = sinon.spy();
-            var result = Collection.from([])[method](sentinels.one, spy);
+            var result = Series.from([])[method](sentinels.one, spy);
             return assert.eventually.strictEqual(result, sentinels.one).then(
                 function() {
                   return assert.notCalled(spy);
@@ -331,7 +331,7 @@ testIterators(
 
           it('does so for a non-array', function() {
             var spy = sinon.spy();
-            var result = Collection.from(42)[method](sentinels.one, spy);
+            var result = Series.from(42)[method](sentinels.one, spy);
             return assert.eventually.strictEqual(result, sentinels.one).then(
                 function() {
                   return assert.notCalled(spy);
@@ -343,7 +343,7 @@ testIterators(
       it('waits until it’s resolved', function() {
         var spy = sinon.spy(identity);
         var memo = Promise.from(sentinels.one);
-        var result = Collection.from([true])[method](memo, spy);
+        var result = Series.from([true])[method](memo, spy);
         return result.then(function() {
           assert.calledOnce(spy);
           assert.calledWithExactly(spy, sentinels.one, true);
@@ -353,13 +353,13 @@ testIterators(
       it('rejects if the memo rejects', function() {
         var spy = sinon.spy(identity);
         var memo = Promise.rejected(sentinels.one);
-        var result = Collection.from([true])[method](memo, spy);
+        var result = Series.from([true])[method](memo, spy);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
       it('propagates cancellation to the promise', function() {
         var memo = new Promise(function() {});
-        var result = Collection.from([true])[method](memo, identity);
+        var result = Series.from([true])[method](memo, identity);
         setImmediate(result.cancel);
         return assert.isRejected(memo, CancellationError);
       });
@@ -369,7 +369,7 @@ testIterators(
         function() {
           var spy = sinon.spy(identity);
           var arr = sentinels.arr();
-          var result = Collection.from(arr)[method](sentinels.one, spy);
+          var result = Series.from(arr)[method](sentinels.one, spy);
           return result.then(function() {
             assert.calledThrice(spy);
             if (fromLeft) {
@@ -392,7 +392,7 @@ testIterators(
 
     it('returns the result of the operation', function() {
       var arr = [0, 2, 2, 3];
-      var result = Collection.from(arr)[method]([1], function(memo, item) {
+      var result = Series.from(arr)[method]([1], function(memo, item) {
         return memo.concat(memo[memo.length - 1] + item);
       });
       var expected;
@@ -415,19 +415,19 @@ testIterators(
       }
 
       it('does so at the first iteration', function() {
-        var result = Collection.from([Error])[method](null,
+        var result = Series.from([Error])[method](null,
             doAsTold);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
       it('does so at the second iteration', function() {
-        var result = Collection.from([false, Error])[method](null,
+        var result = Series.from([false, Error])[method](null,
             doAsTold);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
       it('does so if the first iteration returned a promise', function() {
-        var result = Collection.from([Promise.from(1), Error])[method](null,
+        var result = Series.from([Promise.from(1), Error])[method](null,
             doAsTold);
         return assert.isRejected(result, sentinels.Sentinel);
       });
@@ -440,7 +440,7 @@ testIterators(
           result.cancel();
         }
       });
-      var result = Collection.from(arr)[method](null, spy);
+      var result = Series.from(arr)[method](null, spy);
       return assert.isRejected(result, CancellationError).then(function() {
         assert.calledOnce(spy);
       });
@@ -448,7 +448,7 @@ testIterators(
 
     it('propagates cancellation to iterator-returned promises', function() {
       var p = new Promise(function() {});
-      var result = Collection.from([p])[method](null, function() {
+      var result = Series.from([p])[method](null, function() {
         setImmediate(result.cancel);
         return p;
       });
@@ -464,14 +464,14 @@ function testCheckers(methods, describeMore) {
     var maxConcurrent = determineMaxConcurrent(method);
     var callMethod = makeCallMethod(method, maxConcurrent);
 
-    describe('Collection#' + method + '()', function() {
+    describe('Series#' + method + '()', function() {
       resultsInPromise(callMethod);
 
       if (/Limited$/.test(method)) {
         it('uses #mapLimited(maxConcurrent, func) under the hood', function() {
-          var collection = Collection.from([42]);
-          var spy = sinon.spy(collection, 'mapLimited');
-          callMethod(collection, identity);
+          var series = Series.from([42]);
+          var spy = sinon.spy(series, 'mapLimited');
+          callMethod(series, identity);
           assert.calledOnce(spy);
           assert.lengthOf(spy.firstCall.args, 2);
           assert.equal(spy.firstCall.args[0], maxConcurrent);
@@ -482,9 +482,9 @@ function testCheckers(methods, describeMore) {
         it('uses #' + limitedMethod + '(' + maxConcurrent + ', iterator) ' +
             'under the hood',
             function() {
-              var collection = Collection.from([42]);
-              var spy = sinon.spy(collection, limitedMethod);
-              callMethod(collection, identity);
+              var series = Series.from([42]);
+              var spy = sinon.spy(series, limitedMethod);
+              callMethod(series, identity);
               assert.calledOnce(spy);
               assert.calledWithExactly(spy, maxConcurrent, identity);
             });
@@ -500,19 +500,19 @@ function testCheckers(methods, describeMore) {
 testCheckers(['detect', 'detectSeries', 'detectLimited'],
     function(callMethod, method) {
       it('returns the detected item', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return item === sentinels.two; });
         return assert.eventually.strictEqual(result, sentinels.two);
       });
 
       it('returns undefined if it can’t detect the item', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function() { return false; });
         return assert.eventually.isUndefined(result);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return Promise.from(item === sentinels.two); });
         return assert.eventually.strictEqual(result, sentinels.two);
       });
@@ -522,7 +522,7 @@ testCheckers(['detect', 'detectSeries', 'detectLimited'],
           var spy = sinon.spy(function(item) {
             return item === sentinels.two;
           });
-          var result = callMethod(Collection.from(sentinels.arr()), spy);
+          var result = callMethod(Series.from(sentinels.arr()), spy);
           return assert.eventually.strictEqual(result, sentinels.two)
               .then(function() {
                 assert.calledTwice(spy);
@@ -536,19 +536,19 @@ testCheckers(['detect', 'detectSeries', 'detectLimited'],
 testCheckers(['some', 'someSeries', 'someLimited'],
     function(callMethod, method) {
       it('returns `true` if an iterator returns a truthy value', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return item === sentinels.two; });
         return assert.eventually.strictEqual(result, true);
       });
 
       it('returns `false` if no iterator returns a truthy value', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function() { return false; });
         return assert.eventually.strictEqual(result, false);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return Promise.from(item === sentinels.two); });
         return assert.eventually.strictEqual(result, true);
       });
@@ -559,7 +559,7 @@ testCheckers(['some', 'someSeries', 'someLimited'],
               var spy = sinon.spy(function(item) {
                 return item === sentinels.two;
               });
-              var result = callMethod(Collection.from(sentinels.arr()), spy);
+              var result = callMethod(Series.from(sentinels.arr()), spy);
               return assert.eventually.strictEqual(result, true)
                   .then(function() {
                     assert.calledTwice(spy);
@@ -573,19 +573,19 @@ testCheckers(['some', 'someSeries', 'someLimited'],
 testCheckers(['every', 'everySeries', 'everyLimited'],
     function(callMethod, method) {
       it('returns `true` if all iterators return a truthy value', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function() { return true; });
         return assert.eventually.strictEqual(result, true);
       });
 
       it('returns `false` if an iterator returns a falsy value', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return item !== sentinels.two; });
         return assert.eventually.strictEqual(result, false);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Collection.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.arr()),
             function() { return Promise.from(true); });
         return assert.eventually.strictEqual(result, true);
       });
@@ -596,7 +596,7 @@ testCheckers(['every', 'everySeries', 'everyLimited'],
               var spy = sinon.spy(function(item) {
                 return item !== sentinels.two;
               });
-              var result = callMethod(Collection.from(sentinels.arr()), spy);
+              var result = callMethod(Series.from(sentinels.arr()), spy);
               return assert.eventually.strictEqual(result, false)
                   .then(function() {
                     assert.calledTwice(spy);
@@ -611,14 +611,14 @@ testCheckers(['every', 'everySeries', 'everyLimited'],
   var maxConcurrent = determineMaxConcurrent(method);
   var callMethod = makeCallMethod(method, maxConcurrent);
 
-  describe('Collection#' + method + '()', function() {
-    resultsInCollection(callMethod);
+  describe('Series#' + method + '()', function() {
+    resultsInSeries(callMethod);
 
     if (/Limited$/.test(method)) {
       it('uses #mapLimited(maxConcurrent, func) under the hood', function() {
-        var collection = Collection.from([42]);
-        var spy = sinon.spy(collection, 'mapLimited');
-        callMethod(collection, identity);
+        var series = Series.from([42]);
+        var spy = sinon.spy(series, 'mapLimited');
+        callMethod(series, identity);
         return Promise.from().then(function() {
           assert.calledOnce(spy);
           assert.lengthOf(spy.firstCall.args, 2);
@@ -631,9 +631,9 @@ testCheckers(['every', 'everySeries', 'everyLimited'],
       it('uses #' + limitedMethod + '(' + maxConcurrent + ', iterator) ' +
           'under the hood',
           function() {
-            var collection = Collection.from([42]);
-            var spy = sinon.spy(collection, limitedMethod);
-            callMethod(collection, identity);
+            var series = Series.from([42]);
+            var spy = sinon.spy(series, limitedMethod);
+            callMethod(series, identity);
             assert.calledOnce(spy);
             assert.calledWithExactly(spy, maxConcurrent, identity);
           });
@@ -642,7 +642,7 @@ testCheckers(['every', 'everySeries', 'everyLimited'],
     it('results in a correctly sorted array', function() {
       var four = new sentinels.Sentinel();
       var arr = [sentinels.three, sentinels.two, four, sentinels.one];
-      var result = callMethod(Collection.from(arr), function(item) {
+      var result = callMethod(Series.from(arr), function(item) {
         if (item !== four) {
           return Promise.from(item.id);
         }
