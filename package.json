@@ -24,10 +24,13 @@
     "mocha": "~1.12.0",
     "mocha-as-promised": "~1.4.0",
     "promises-aplus-tests": "~2.0.0",
-    "sinon": "~1.7.3"
+    "sinon": "~1.7.3",
+    "grock": "^0.3.1"
   },
   "scripts": {
-    "test": "test/runner.js"
+    "test": "test/runner.js",
+    "doc": "grock",
+    "doc-publish": "grock --github"
   },
   "engines": {
     "node": ">=0.10.0"
