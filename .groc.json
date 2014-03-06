@@ -4,7 +4,9 @@
     "lib/legendary.js",
     "lib/promises.js",
     "lib/series.js",
-    "lib/CancellationError.js"
+    "lib/CancellationError.js",
+    "lib/TimeoutError.js",
+    "lib/timed.js"
   ],
   "github": false,
   "repository-url": "https://github.com/novemberborn/legendary",

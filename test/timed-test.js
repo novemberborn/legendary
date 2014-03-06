@@ -23,7 +23,7 @@ function assertFulfilled(p, value) {
   });
 }
 
-describe('timed.delay(milliseconds, promiseOrValue)', function() {
+describe('timed.delay(milliseconds, x)', function() {
   clock.use();
 
   it('returns a Promise instance', function() {
@@ -32,23 +32,29 @@ describe('timed.delay(milliseconds, promiseOrValue)', function() {
 
   it('resolves after a delay of `milliseconds`', function() {
     var delayed = timed.delay(50);
-    assertPending(delayed);
-    clock.tick(50);
-    assertFulfilled(delayed);
+    process.nextTick(function() {
+      assertPending(delayed);
+      clock.tick(50);
+      assertFulfilled(delayed);
+    });
   });
 
   it('resolves "immediately" a falsy delay', function() {
     var delayed = timed.delay();
-    assertPending(delayed);
-    clock.immediate();
-    assertFulfilled(delayed);
+    process.nextTick(function() {
+      assertPending(delayed);
+      clock.immediate();
+      assertFulfilled(delayed);
+    });
   });
 
   it('resolves with provided value after delay', function() {
     var delayed = timed.delay(50, sentinels.one);
-    assertPending(delayed);
-    clock.tick(50);
-    assertFulfilled(delayed, sentinels.one);
+    process.nextTick(function() {
+      assertPending(delayed);
+      clock.tick(50);
+      assertFulfilled(delayed, sentinels.one);
+    });
   });
 
   it('resolves after input promise plus delay', function(done) {
@@ -77,17 +83,57 @@ describe('timed.delay(milliseconds, promiseOrValue)', function() {
     var result = timed.delay(50, Promise.rejected(sentinels.one));
     return assert.isRejected(result, sentinels.Sentinel);
   });
+
+  it('resolves after input thenable plus delay', function(done) {
+    var resolveInput;
+    var input = {
+      then: function(resolve) {
+        resolveInput = resolve;
+      }
+    };
+
+    var delayed = timed.delay(50, input);
+    assertPending(delayed);
+
+    clock.tick(50);
+    resolveInput(sentinels.one);
+
+    process.nextTick(function() {
+      assertPending(delayed);
+
+      clock.tick(50);
+      process.nextTick(function() {
+        assertFulfilled(delayed, sentinels.one);
+        done();
+      });
+    });
+  });
+
+  it('does not delay if input thenable is rejected', function() {
+    var result = timed.delay(50, {
+      then: function(resolve, reject) {
+        reject(sentinels.one);
+      }
+    });
+    return assert.isRejected(result, sentinels.Sentinel);
+  });
 });
 
-describe('timed.timeout(milliseconds, promiseOrValue)', function() {
+describe('timed.timeout(milliseconds, x)', function() {
   clock.use();
 
   it('returns a Promise instance', function() {
     assert.instanceOf(timed.timeout(0), Promise);
   });
 
-  it('rejects after a timeout', function() {
+  it('rejects after a timeout of a promise', function() {
     var p = timed.timeout(50, new Promise(function() {}));
+    clock.tick(50);
+    return assert.isRejected(p, TimeoutError);
+  });
+
+  it('rejects after a timeout of a thenable', function() {
+    var p = timed.timeout(50, { then: function() {} });
     clock.tick(50);
     return assert.isRejected(p, TimeoutError);
   });
@@ -118,10 +164,31 @@ describe('timed.timeout(milliseconds, promiseOrValue)', function() {
     return assert.eventually.strictEqual(p, sentinels.one);
   });
 
+  it('does not time out when passed thenable that fulfills in time',
+    function() {
+      var p = timed.timeout(100, {
+        then: function(resolve) {
+          setTimeout(resolve, 50, sentinels.one);
+        }
+      });
+      clock.tick(50);
+      return assert.eventually.strictEqual(p, sentinels.one);
+    });
+
   it('does not time out when passed promise that rejects in time', function() {
     var p = timed.timeout(100, new Promise(function(_, reject) {
       setTimeout(reject, 50, sentinels.one);
     }));
+    clock.tick(50);
+    return assert.isRejected(p, sentinels.Sentinel);
+  });
+
+  it('does not time out when passed thenable that rejects in time', function() {
+    var p = timed.timeout(100, {
+      then: function(_, reject) {
+        setTimeout(reject, 50, sentinels.one);
+      }
+    });
     clock.tick(50);
     return assert.isRejected(p, sentinels.Sentinel);
   });
