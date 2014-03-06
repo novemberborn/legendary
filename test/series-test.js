@@ -315,7 +315,7 @@ testIterators(
       return Series.from([])[method](null, iterator);
     });
 
-    describe('promises the memo value unless it receives a ' +
+    describe('promises the initial value unless it receives a ' +
         'non-empty array value, without calling the iterator',
         function() {
           it('does so for an empty array', function() {
@@ -337,33 +337,33 @@ testIterators(
           });
         });
 
-    describe('accepts a promise for the memo value', function() {
+    describe('accepts a promise for the initial value', function() {
       it('waits until it’s resolved', function() {
         var spy = sinon.spy(identity);
-        var memo = Promise.from(sentinels.one);
-        var result = Series.from([true])[method](memo, spy);
+        var initialValue = Promise.from(sentinels.one);
+        var result = Series.from([true])[method](initialValue, spy);
         return result.then(function() {
           assert.calledOnce(spy);
           assert.calledWithExactly(spy, sentinels.one, true);
         });
       });
 
-      it('rejects if the memo rejects', function() {
+      it('rejects if the initial value rejects', function() {
         var spy = sinon.spy(identity);
-        var memo = Promise.rejected(sentinels.one);
-        var result = Series.from([true])[method](memo, spy);
+        var initialValue = Promise.rejected(sentinels.one);
+        var result = Series.from([true])[method](initialValue, spy);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
       it('propagates cancellation to the promise', function() {
-        var memo = new Promise(function() {});
-        var result = Series.from([true])[method](memo, identity);
+        var initialValue = new Promise(function() {});
+        var result = Series.from([true])[method](initialValue, identity);
         setImmediate(result.cancel);
-        return assert.isRejected(memo, CancellationError);
+        return assert.isRejected(initialValue, CancellationError);
       });
     });
 
-    it('calls iterator with memo and item, in order',
+    it('calls iterator with initial value and item, in order',
         function() {
           var spy = sinon.spy(identity);
           var arr = sentinels.arr();
@@ -390,8 +390,9 @@ testIterators(
 
     it('returns the result of the operation', function() {
       var arr = [0, 2, 2, 3];
-      var result = Series.from(arr)[method]([1], function(memo, item) {
-        return memo.concat(memo[memo.length - 1] + item);
+      var result = Series.from(arr)[method]([1], function(initialValue, item) {
+        return initialValue.concat(
+          initialValue[initialValue.length - 1] + item);
       });
       var expected;
       if (fromLeft) {

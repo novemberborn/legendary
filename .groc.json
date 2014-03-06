@@ -3,6 +3,7 @@
     "README.md",
     "lib/legendary.js",
     "lib/promises.js",
+    "lib/series.js",
     "lib/CancellationError.js"
   ],
   "github": false,
