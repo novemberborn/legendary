@@ -6,7 +6,8 @@
     "lib/series.js",
     "lib/CancellationError.js",
     "lib/TimeoutError.js",
-    "lib/timed.js"
+    "lib/timed.js",
+    "lib/concurrent.js"
   ],
   "github": false,
   "repository-url": "https://github.com/novemberborn/legendary",

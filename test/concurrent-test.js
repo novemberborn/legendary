@@ -5,11 +5,12 @@ var sinon = require('sinon');
 var sentinels = require('./sentinels');
 
 var Promise = require('../').Promise;
+var Series = require('../').Series;
 var concurrent = require('../').concurrent;
 
 describe('concurrent.sequence(arrayOfTasks)', function() {
-  it('returns a Promise instance', function() {
-    assert.instanceOf(concurrent.sequence([]), Promise);
+  it('returns a Series instance', function() {
+    assert.instanceOf(concurrent.sequence([]), Series);
   });
 
   it('executes tasks in order', function() {
@@ -17,6 +18,23 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
     return concurrent.sequence(spies).then(function() {
       assert.callOrder.apply(assert, spies);
     });
+  });
+
+  it('executes one task at a time', function() {
+    var started = 0, finished = 0;
+    var tasks = sentinels.arr(function() {
+      return function() {
+        started++;
+        return new Promise(function(resolve) {
+          process.nextTick(function() {
+            finished++;
+            resolve(started === finished);
+          });
+        });
+      };
+    });
+    return assert.eventually.deepEqual(concurrent.sequence(tasks),
+        [true, true, true]);
   });
 
   it('resolves to an empty array when no tasks are supplied', function() {
@@ -150,8 +168,24 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
 });
 
 describe('concurrent.parallel(arrayOfTasks)', function() {
-  it('returns a Promise instance', function() {
-    assert.instanceOf(concurrent.parallel([]), Promise);
+  it('returns a Series instance', function() {
+    assert.instanceOf(concurrent.parallel([]), Series);
+  });
+
+  it('executes all tasks in parallel', function() {
+    var started = 0;
+    var tasks = sentinels.arr(function() {
+      return function() {
+        started++;
+        return new Promise(function(resolve) {
+          process.nextTick(function() {
+            resolve(started === 3);
+          });
+        });
+      };
+    });
+    return assert.eventually.deepEqual(concurrent.parallel(tasks),
+        [true, true, true]);
   });
 
   it('resolves to an empty array when no tasks are supplied', function() {
