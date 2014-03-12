@@ -11,17 +11,17 @@ var CancellationError = require('../').CancellationError;
 var delay = require('../').timed.delay;
 
 var main = require('../');
-function SubSeries(resolver) {
-  if (typeof resolver !== 'function') {
+function SubSeries(executor) {
+  if (typeof executor !== 'function') {
     throw new TypeError();
   }
 
   if (!(this instanceof SubSeries)) {
-    return new SubSeries(resolver);
+    return new SubSeries(executor);
   }
 
-  if (resolver !== main.blessObject) {
-    main.blessObject(this, resolver, true);
+  if (executor !== main.blessObject) {
+    main.blessObject(this, executor, true);
   }
 }
 main.extendConstructor(SubSeries, Series);

@@ -9,17 +9,17 @@ var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
 
 var main = require('../');
-function SubPromise(resolver) {
-  if (typeof resolver !== 'function') {
+function SubPromise(executor) {
+  if (typeof executor !== 'function') {
     throw new TypeError();
   }
 
   if (!(this instanceof SubPromise)) {
-    return new SubPromise(resolver);
+    return new SubPromise(executor);
   }
 
-  if (resolver !== main.blessObject) {
-    main.blessObject(this, resolver, true);
+  if (executor !== main.blessObject) {
+    main.blessObject(this, executor, true);
   }
 }
 main.extendConstructor(SubPromise, Promise);

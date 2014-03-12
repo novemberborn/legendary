@@ -6,17 +6,17 @@ var sentinels = require('./sentinels');
 var main = require('../');
 var Promise = require('../').Promise;
 
-function SubPromise(resolver) {
-  if (typeof resolver !== 'function') {
+function SubPromise(executor) {
+  if (typeof executor !== 'function') {
     throw new TypeError();
   }
 
   if (!(this instanceof SubPromise)) {
-    return new SubPromise(resolver);
+    return new SubPromise(executor);
   }
 
-  if (resolver !== main.blessObject) {
-    main.blessObject(this, resolver);
+  if (executor !== main.blessObject) {
+    main.blessObject(this, executor);
   }
 }
 SubPromise.prototype = new Promise(main.blessObject);
@@ -88,9 +88,9 @@ describe('Subclassing', function() {
         });
 
     describe('can be configured to return a different subclass', function() {
-      var OtherPromise = main.extendConstructor(function(resolver) {
-        if (resolver !== main.blessObject) {
-          main.blessObject(this, resolver, true, SubPromise);
+      var OtherPromise = main.extendConstructor(function(executor) {
+        if (executor !== main.blessObject) {
+          main.blessObject(this, executor, true, SubPromise);
         }
       });
 
