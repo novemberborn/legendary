@@ -1,7 +1,7 @@
 {
   "glob": [
     "README.md",
-    "lib/legendary.js",
+    "lib/main.js",
     "lib/promises.js",
     "lib/series.js",
     "lib/CancellationError.js",

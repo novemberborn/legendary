@@ -12,7 +12,7 @@ npm install legendary
 
 ## Usage
 
-See [API Docs](http://novemberborn.github.io/legendary/lib/legendary.js.html).
+See [API Docs](http://novemberborn.github.io/legendary/lib/main.js.html).
 
 ## Theme song
 

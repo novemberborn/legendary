@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/novemberborn/legendary.git"
   },
-  "main": "lib/legendary.js",
+  "main": "lib/main.js",
   "devDependencies": {
     "chai": "~1.7.2",
     "chai-as-promised": "~4.0.0",
