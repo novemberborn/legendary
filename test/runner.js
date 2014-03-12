@@ -2,7 +2,7 @@
 'use strict';
 
 var Mocha = require('mocha');
-require('mocha-as-promised')(Mocha);
+require('mocha-as-promised')([Mocha]);
 
 var chai = require('chai');
 chai.use(require('chai-as-promised'));
