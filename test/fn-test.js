@@ -201,5 +201,23 @@ describe('fn.compose()', function() {
                     [sentinels.two]);
               });
         });
+
+    it('assimilates thenables', function() {
+      var composed = fn.compose(
+        function() {
+          return {
+            then: function(resolve) { resolve(sentinels.one); }
+          };
+        },
+        function(prevResult) {
+          assert.strictEqual(prevResult, sentinels.one);
+          return {
+            then: function(resolve) { resolve(sentinels.two); }
+          };
+        }
+      );
+
+      return assert.eventually.strictEqual(composed(), sentinels.two);
+    });
   });
 });
