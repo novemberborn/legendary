@@ -80,11 +80,64 @@ a promise is cancelled. <a href="./CancellationError.js.html">Read more</a>.</p>
       
       
         <div class="code"><div class="wrapper">exports.CancellationError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./CancellationError'</span>);
-exports.TimeoutError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./TimeoutError'</span>);
-
-exports.timed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./timed'</span>);
-exports.concurrent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./concurrent'</span>);
-exports.fn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./fn'</span>);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="timeouterror"><a href="#timeouterror" class="anchor"></a>TimeoutError</h2><p>Extends <code>Error</code>. Instances of this class are used as rejection reasons when
+a promise times out.
+<a href="./TimeoutError.js.html">Read more</a>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.TimeoutError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./TimeoutError'</span>);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="timed"><a href="#timed" class="anchor"></a>timed</h2><p>Provides helper methods for delaying fulfillment and guarding against
+indefinitely pending promises or thenables.
+<a href="./timed.js.html">Read more</a>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.timed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./timed'</span>);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="concurrent"><a href="#concurrent" class="anchor"></a>concurrent</h2><p>Provides helper methods for orchestrating task execution.
+<a href="./concurrent.js.html">Read more</a>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.concurrent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./concurrent'</span>);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="fn"><a href="#fn" class="anchor"></a>fn</h2><p>Provides helper methods for functional composition.
+<a href="./fn.js.html">Read more</a>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.fn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./fn'</span>);
 </div></div>
       
       </div>

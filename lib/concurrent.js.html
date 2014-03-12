@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>concurrent - concurrent.js</title>
+
+  <link rel="stylesheet" href="../assets/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+  <meta name="groc-relative-root" content="../"/>
+  <meta name="groc-document-path" content="lib/concurrent.js"/>
+  
+</head>
+<body>
+  <div id="file-area">
+    <div id="meta">
+      <code class="file-path">
+      
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/concurrent.js">lib/concurrent.js</a>
+      
+      </code>
+    </div>
+    <div id="document">
+    
+      <div class="segment">
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-keyword">var</span> series = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./series'</span>);
+<span class="hljs-keyword">var</span> promises = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>);
+
+<span class="hljs-keyword">var</span> slice = [].slice;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h1 id="concurrent"><a href="#concurrent" class="anchor"></a>concurrent</h1><p>Provides helper methods for orchestrating task execution.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="sequence-arrayoftasks-args-"><a href="#sequence-arrayoftasks-args-" class="anchor"></a>sequence(arrayOfTasks, ...args)</h2><p>Takes an array of functions (&quot;tasks&quot;) to be invoked, in sequence. Returns
+a <code>Series</code> instance that&#39;ll be fulfilled with an array containing the
+(fulfilled) return value of each task. Tasks will be invoked with the other
+arguments that are passed.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>arrayOfTasks</code> may be a promise for the actual array, and the other
+arguments may also be promises. However instead of invoking the tasks with
+the promises, they&#39;ll be invoked with the fulfillment values.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If the <code>arrayOfTasks</code> promise or any other argument promise is rejected, the
+returned promise will be rejected with the same reason. If a task throws or
+returns a rejected promise, the promise returned by <code>sequence()</code> will be
+rejected with that error / reason, and no further tasks will be invoked.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><strong>Thenables returned by tasks are not assimilated, but instead are treated as
+objects.</strong></p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sequence</span><span class="hljs-params">(arrayOfTasks)</span> {</span>
+  <span class="hljs-keyword">return</span> series.Series.all(slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>)).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(args)</span> {</span>
+    <span class="hljs-keyword">return</span> series.Series.from(arrayOfTasks).map(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(task)</span> {</span>
+      <span class="hljs-keyword">return</span> task.apply(<span class="hljs-literal">undefined</span>, args);
+    });
+  });
+}
+
+exports.sequence = sequence;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="pipeline-arrayoftasks-firstargs-"><a href="#pipeline-arrayoftasks-firstargs-" class="anchor"></a>pipeline(arrayOfTasks, ...firstArgs)</h2><p>Takes an array of functions (&quot;tasks&quot;) to be invoked, in sequence. Each tasks
+will be invoked with the (fulfilled) return value of the previous task,
+except for the first task, which will be invoked with the arguments passed
+to <code>pipeline()</code>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Returns a <code>Promise</code> instance that&#39;ll be fulfilled with the return value of
+the last task. If <code>arrayOfTasks</code> is empty, the returned promise will be
+fulfilled with <code>undefined</code>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>arrayOfTasks</code> may be a promise for the actual array, and the other
+arguments may also be promises. However instead of invoking the first task
+with the promises, it&#39;ll be invoked with the fulfillment values.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If the <code>arrayOfTasks</code> promise or any other argument promise is rejected, the
+returned promise will be rejected with the same reason. If a task throws or
+returns a rejected promise, the promise returned by <code>pipeline()</code> will be
+rejected with that error / reason, and no further tasks will be invoked.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><strong>Thenables returned by tasks are not assimilated, but instead are treated as
+objects.</strong></p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pipeline</span><span class="hljs-params">(arrayOfTasks)</span> {</span>
+  <span class="hljs-keyword">return</span> promises.Promise.all(
+    slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>)
+  ).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(firstArgs)</span> {</span>
+    <span class="hljs-keyword">var</span> value;
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">perform</span><span class="hljs-params">(task)</span> {</span>
+      <span class="hljs-keyword">var</span> outcome;
+      <span class="hljs-keyword">if</span> (firstArgs) {
+        outcome = task.apply(<span class="hljs-literal">undefined</span>, firstArgs);
+        firstArgs = <span class="hljs-literal">null</span>;
+      } <span class="hljs-keyword">else</span> {
+        outcome = task(value);
+      }
+
+      <span class="hljs-keyword">if</span> (promises.Promise.isInstance(outcome)) {
+        <span class="hljs-keyword">return</span> outcome.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(outcome)</span> {</span>
+          value = outcome;
+        });
+      } <span class="hljs-keyword">else</span> {
+        value = outcome;
+      }
+    }
+
+    <span class="hljs-keyword">return</span> series.Series.from(arrayOfTasks)
+      .each(perform)
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span> <span class="hljs-keyword">return</span> value; });
+  });
+}
+
+exports.pipeline = pipeline;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="parallel-arrayoftasks-args-"><a href="#parallel-arrayoftasks-args-" class="anchor"></a>parallel(arrayOfTasks, ...args)</h2><p>Takes an array of functions (&quot;tasks&quot;) to be invoked, in parallel. Returns
+a <code>Series</code> instance that&#39;ll be fulfilled with an array containing the
+(fulfilled) return value of each task. Tasks will be invoked with the other
+arguments that are passed.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>arrayOfTasks</code> may be a promise for the actual array, and the other
+arguments may also be promises. However instead of invoking the tasks with
+the promises, they&#39;ll be invoked with the fulfillment values.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If the <code>arrayOfTasks</code> promise or any other argument promise is rejected, the
+returned promise will be rejected with the same reason. If a task throws or
+returns a rejected promise, the promise returned by <code>parallel()</code> will be
+rejected with that error / reason. Since all tasks run in parallel, only when
+a task throws synchronously are no other tasks invoked, otherwise their
+return values or possible errors are discarded.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><strong>Thenables returned by tasks are not assimilated, but instead are treated as
+objects.</strong></p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parallel</span><span class="hljs-params">(arrayOfTasks)</span> {</span>
+  <span class="hljs-keyword">return</span> series.Series.all(slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>)).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(args)</span> {</span>
+    <span class="hljs-keyword">return</span> series.Series.from(arrayOfTasks)
+      .mapParallel(<span class="hljs-literal">Infinity</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(task)</span> {</span>
+        <span class="hljs-keyword">return</span> task.apply(<span class="hljs-literal">undefined</span>, args);
+      });
+  });
+}
+
+exports.parallel = parallel;
+</div></div>
+      
+      </div>
+    
+    </div>
+  </div>
+
+  <script src="../toc.js"></script>
+  <script src="../assets/libs.js"></script>
+  <script src="../assets/behavior.js"></script>
+</body>
+</html>

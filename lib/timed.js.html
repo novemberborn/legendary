@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>timed - timed.js</title>
+
+  <link rel="stylesheet" href="../assets/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+  <meta name="groc-relative-root" content="../"/>
+  <meta name="groc-document-path" content="lib/timed.js"/>
+  
+</head>
+<body>
+  <div id="file-area">
+    <div id="meta">
+      <code class="file-path">
+      
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/timed.js">lib/timed.js</a>
+      
+      </code>
+    </div>
+    <div id="document">
+    
+      <div class="segment">
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-keyword">var</span> promises = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>);
+<span class="hljs-keyword">var</span> TimeoutError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./TimeoutError'</span>);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h1 id="timed"><a href="#timed" class="anchor"></a>timed</h1><p>Provides helper methods for delaying fulfillment and guarding against
+indefinitely pending promises or thenables.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">timer</span><span class="hljs-params">(ms, func)</span> {</span>
+  <span class="hljs-keyword">var</span> ref;
+  <span class="hljs-keyword">if</span> (ms) {
+    ref = setTimeout(func, ms);
+  } <span class="hljs-keyword">else</span> {
+    ref = setImmediate(func);
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">abortTimer</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">if</span> (ms) {
+      clearTimeout(ref);
+    } <span class="hljs-keyword">else</span> {
+      clearImmediate(ref);
+    }
+  };
+}
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="delay-milliseconds-x-"><a href="#delay-milliseconds-x-" class="anchor"></a>delay(milliseconds, x)</h2><p>Returns a <code>Promise</code> instance which is fulfilled after at least <code>milliseconds</code>
+have passed.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>x</code> is a thenable it is first assimilated into a promise.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>x</code> is a <code>Promise</code> instance or a thenable, the clock won&#39;t start running
+until it has fulfilled. The returned promise will be fulfilled with the same
+value, or <code>x</code> if it was not a <code>Promise</code> instance or thenable.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>x</code> rejects, the returned promise will be rejected with the same rejection
+reason. Note that the rejection propagation is not delayed.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>To start the clock straight away, without waiting for <code>x</code> to be fulfilled,
+you could use:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-function"><span class="hljs-title">delay</span><span class="hljs-params">(<span class="hljs-number">5000</span>)</span>.<span class="hljs-title">yield</span><span class="hljs-params">(promise)</span></span>
+</code></pre></div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">delay</span><span class="hljs-params">(milliseconds, x)</span> {</span>
+  <span class="hljs-keyword">return</span> promises.Promise.from(x).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve)</span> {</span>
+      <span class="hljs-keyword">return</span> timer(milliseconds, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        resolve(value);
+      });
+    });
+  });
+}
+
+exports.delay = delay;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="timeout-milliseconds-x-"><a href="#timeout-milliseconds-x-" class="anchor"></a>timeout(milliseconds, x)</h2><p>Guards against indefinitely pending promises. Returns a <code>Promise</code> instance.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>x</code> is neither a <code>Promise</code> instance or a thenable, the returned promise
+is fulfilled immediately.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>x</code> is a thenable it is first assimilated into a promise.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If the promise fulfills or rejects before <code>milliseconds</code> have passed, the
+returned promise is fulfilled or rejected with the same value or reason,
+respectively. Otherwise the returned promise is rejected with a
+<a href="./TimeoutError.js.html"><code>TimeoutError</code></a> instance.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">timeout</span><span class="hljs-params">(milliseconds, x)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+    <span class="hljs-keyword">var</span> abort = timer(milliseconds, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+      reject(<span class="hljs-keyword">new</span> TimeoutError(<span class="hljs-string">'Timed out after '</span> + milliseconds + <span class="hljs-string">'ms'</span>));
+    });
+
+    promises.Promise.from(x)
+      .tap(resolve, reject)
+      .ensure(abort);
+
+    <span class="hljs-keyword">return</span> abort;
+  });
+}
+
+exports.timeout = timeout;
+</div></div>
+      
+      </div>
+    
+    </div>
+  </div>
+
+  <script src="../toc.js"></script>
+  <script src="../assets/libs.js"></script>
+  <script src="../assets/behavior.js"></script>
+</body>
+</html>

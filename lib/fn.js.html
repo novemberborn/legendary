@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>fn - fn.js</title>
+
+  <link rel="stylesheet" href="../assets/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+  <meta name="groc-relative-root" content="../"/>
+  <meta name="groc-document-path" content="lib/fn.js"/>
+  
+</head>
+<body>
+  <div id="file-area">
+    <div id="meta">
+      <code class="file-path">
+      
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/fn.js">lib/fn.js</a>
+      
+      </code>
+    </div>
+    <div id="document">
+    
+      <div class="segment">
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h1 id="fn"><a href="#fn" class="anchor"></a>fn</h1><p>Provides helper methods for functional composition.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> promises = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>);
+<span class="hljs-keyword">var</span> concurrent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./concurrent'</span>);
+
+<span class="hljs-keyword">var</span> slice = [].slice;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">exec</span><span class="hljs-params">(func, thisArg, args)</span> {</span>
+  <span class="hljs-keyword">return</span> promises.Promise.all(args).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(args)</span> {</span>
+    <span class="hljs-keyword">return</span> func.apply(thisArg, args);
+  });
+}
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="call-normalfunction-args-"><a href="#call-normalfunction-args-" class="anchor"></a>call(normalFunction, ...args)</h2><p>Invokes <code>normalFunction</code> in a future turn, returning a <code>Promise</code> instance for
+its result. This will be rejected with any error thrown by <code>normalFunction</code>,
+or resolved with its return value. If a promise or thenable is returned its
+state will be adopted.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>normalFunction</code> is applied to the <code>thisArg</code> of the <code>call()</code> invocation:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-keyword">var</span> sentinel = {};
+call.call(sentinel, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  assert(<span class="hljs-keyword">this</span> === sentinel); <span class="hljs-comment">// true</span>
+});
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>normalFunction</code> will be invoked with the other arguments that are passed.
+These arguments may also be promises, however instead of invoking
+<code>normalFunction</code> with the promises, it&#39;ll be invoked with the fulfillment
+values. If an argument promise is rejected, the returned promise will be
+rejected with the same reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">call</span><span class="hljs-params">(normalFunction)</span> {</span>
+  <span class="hljs-comment">/*jshint validthis:true*/</span>
+  <span class="hljs-keyword">return</span> exec(normalFunction, <span class="hljs-keyword">this</span>, slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>));
+}
+
+exports.call = call;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="apply-normalfunction-args-"><a href="#apply-normalfunction-args-" class="anchor"></a>apply(normalFunction, args)</h2><p>Invokes <code>normalFunction</code> in a future turn, returning a <code>Promise</code> instance for
+its result. This will be rejected with any error thrown by <code>normalFunction</code>,
+or resolved with its return value. If a promise or thenable is returned its
+state will be adopted.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>normalFunction</code> is applied to the <code>thisArg</code> of the <code>apply()</code> invocation:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-keyword">var</span> sentinel = {};
+apply.call(sentinel, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  assert(<span class="hljs-keyword">this</span> === sentinel); <span class="hljs-comment">// true</span>
+});
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>normalFunction</code> will be invoked with the arguments that are passed in the
+<code>args</code> array. <code>args</code> may be a promise, or it can be an array containing
+promises, or a promise for such an array. However instead of invoking
+<code>normalFunction</code> with the promises, it&#39;ll be invoked with the fulfillment
+values. If an argument promise is rejected, the returned promise will be
+rejected with the same reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">apply</span><span class="hljs-params">(normalFunction, args)</span> {</span>
+  <span class="hljs-comment">/*jshint validthis:true*/</span>
+  <span class="hljs-keyword">return</span> exec(normalFunction, <span class="hljs-keyword">this</span>, args);
+}
+
+exports.apply = apply;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="lift-normalfunction-args-"><a href="#lift-normalfunction-args-" class="anchor"></a>lift(normalFunction, ...args)</h2><p>Returns a new function that will invoke <code>normalFunction</code> when invoked:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">foo</span><span class="hljs-params">()</span></span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'bar'</span>;
+}
+var promisingFoo = lift(foo);
+promisingFoo().<span class="hljs-keyword">then</span>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span></span> {
+  <span class="hljs-built_in">assert</span>(value === <span class="hljs-string">'bar'</span>); // <span class="hljs-keyword">true</span>
+});
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The lifted function will return a <code>Promise</code> instance for the result of
+<code>normalFunction</code>. This will be rejected with any error thrown by
+<code>normalFunction</code>, or resolved with its return value. If a promise or thenable
+is returned its state will be adopted.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>normalFunction</code> is applied to the <code>thisArg</code> of the listed function&#39;s
+invocation:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-keyword">var</span> sentinel = {};
+lift(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  assert(<span class="hljs-keyword">this</span> === sentinel); <span class="hljs-comment">// true</span>
+}).call(sentinel);
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Supports partial application by combining other arguments passed to <code>lift()</code>
+with those passed when invoking the lifted function. These arguments may also
+be promises, however instead of invoking <code>normalFunction</code> with the promises,
+it&#39;ll be invoked with the fulfillment values. If an argument promise is
+rejected, the returned promise will be rejected with the same reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lift</span><span class="hljs-params">(normalFunction)</span> {</span>
+  <span class="hljs-keyword">var</span> args = slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>);
+  <span class="hljs-keyword">var</span> resolvedArgs = args.length === <span class="hljs-number">0</span>;
+
+  <span class="hljs-keyword">var</span> invoke = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">var</span> thisArg = <span class="hljs-keyword">this</span>;
+    <span class="hljs-keyword">var</span> additionalArgs = slice.call(<span class="hljs-built_in">arguments</span>);
+
+    <span class="hljs-keyword">if</span> (!resolvedArgs) {
+      <span class="hljs-keyword">return</span> promises.Promise.all(args).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolved)</span> {</span>
+        args = resolved;
+        resolvedArgs = <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">return</span> invoke.apply(thisArg, additionalArgs);
+      });
+    }
+
+    <span class="hljs-keyword">return</span> promises.Promise.all(additionalArgs).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(additionalArgs)</span> {</span>
+      <span class="hljs-keyword">return</span> normalFunction.apply(thisArg, args.concat(additionalArgs));
+    });
+  };
+
+  <span class="hljs-keyword">return</span> invoke;
+}
+
+exports.lift = lift;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="compose-funcs-"><a href="#compose-funcs-" class="anchor"></a>compose(...funcs)</h2><p>Returns a new function that, when invoked, will invoke each original function
+<code>func</code> in order, passing the (fulfilled) return value from one to the next:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code>compose(
+  <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span> { <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>; },
+  <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(x)</span></span> { <span class="hljs-keyword">return</span> x * x; }
+)().<span class="hljs-keyword">then</span>(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span></span> {
+  <span class="hljs-built_in">assert</span>(value === <span class="hljs-number">4</span>); // <span class="hljs-keyword">true</span>
+});
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The composed function will return a <code>Promise</code> instance for the (fulfilled)
+result of the final <code>func</code>. This will be rejected with any error thrown by
+any <code>func</code>, or the rejection reason of any promise or thenable that is
+returned. If no <code>func</code>s are specified, the promise will be fulfilled with
+<code>undefined</code>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Each function is invoked with the <code>thisArg</code> of the composed function&#39;s
+invocation:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><pre><code><span class="hljs-keyword">var</span> sentinel = {};
+compose(
+  <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    assert(<span class="hljs-keyword">this</span> === sentinel); <span class="hljs-comment">// true</span>
+  },
+  <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    assert(<span class="hljs-keyword">this</span> === sentinel); <span class="hljs-comment">// true</span>
+  }
+).call(sentinel);
+</code></pre></div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The first <code>func</code> will be invoked with the other arguments that are passed.
+These arguments may also be promises, however instead of invoking <code>func</code> with
+the promises, it&#39;ll be invoked with the fulfillment values. If an argument
+promise is rejected, the returned promise will be rejected with the same
+reason.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">compose</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">var</span> funcs = slice.call(<span class="hljs-built_in">arguments</span>);
+
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">var</span> thisArg = <span class="hljs-keyword">this</span>;
+    <span class="hljs-keyword">var</span> boundFuncs = funcs.map(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(func)</span> {</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+        <span class="hljs-keyword">return</span> promises.Promise.from(func.apply(thisArg, <span class="hljs-built_in">arguments</span>));
+      };
+    });
+
+    <span class="hljs-keyword">var</span> args = slice.call(<span class="hljs-built_in">arguments</span>);
+    args.unshift(boundFuncs);
+
+    <span class="hljs-keyword">return</span> concurrent.pipeline.apply(concurrent, args);
+  };
+}
+
+exports.compose = compose;
+</div></div>
+      
+      </div>
+    
+    </div>
+  </div>
+
+  <script src="../toc.js"></script>
+  <script src="../assets/libs.js"></script>
+  <script src="../assets/behavior.js"></script>
+</body>
+</html>

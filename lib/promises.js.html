@@ -640,21 +640,11 @@ promise:</p>
         </div>
       
       
-        <div class="code"><div class="wrapper">Promise.prototype.fork = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span></div></div>
-      
-      </div>
-    
-      <div class="segment">
-      
-        <div class="comments ">
-          <div class="wrapper"><p>For <code>fork()</code> and <code>uncancellable()</code> we resolve the propagator with a
-thenable. Passing a promise would lead it to attempt to adopt state
-synchonously, and propagate cancellation to the current promise.</p>
-</div>
-        </div>
-      
-      
-        <div class="code"><div class="wrapper">  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+        <div class="code"><div class="wrapper">Promise.prototype.fork = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-comment">//For `fork()` and `uncancellable()` we resolve the propagator with a</span>
+  <span class="hljs-comment">//thenable. Passing a promise would lead it to attempt to adopt state</span>
+  <span class="hljs-comment">//synchonously, and propagate cancellation to the current promise.</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
     <span class="hljs-literal">false</span>, { then: <span class="hljs-keyword">this</span>.then }
   ).promise();
 };

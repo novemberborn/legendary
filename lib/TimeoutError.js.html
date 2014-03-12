@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TimeoutError - TimeoutError.js</title>
+
+  <link rel="stylesheet" href="../assets/style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+  <meta name="groc-relative-root" content="../"/>
+  <meta name="groc-document-path" content="lib/TimeoutError.js"/>
+  
+</head>
+<body>
+  <div id="file-area">
+    <div id="meta">
+      <code class="file-path">
+      
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/TimeoutError.js">lib/TimeoutError.js</a>
+      
+      </code>
+    </div>
+    <div id="document">
+    
+      <div class="segment">
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h1 id="timeouterror"><a href="#timeouterror" class="anchor"></a>TimeoutError</h1><p>Extends <code>Error</code>. Instances of this class are used as rejection reasons when
+a promise times out.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">TimeoutError</span><span class="hljs-params">(message)</span> {</span>
+  <span class="hljs-keyword">this</span>.name = <span class="hljs-string">'timeout'</span>;
+  <span class="hljs-keyword">this</span>.message = message;
+}
+
+TimeoutError.prototype = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>();
+TimeoutError.prototype.constructor = TimeoutError;</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Each instance will have a <code>name</code> property with a value of <code>&quot;timeout&quot;</code>.
+However, the instances will not have stack traces.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">TimeoutError.prototype.name = <span class="hljs-string">'timeout'</span>;
+TimeoutError.prototype.stack = <span class="hljs-literal">null</span>;</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Node should log the error as <code>[TimeoutError]</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">TimeoutError.prototype.inspect = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'[TimeoutError]'</span>;
+};
+
+module.exports = TimeoutError;
+</div></div>
+      
+      </div>
+    
+    </div>
+  </div>
+
+  <script src="../toc.js"></script>
+  <script src="../assets/libs.js"></script>
+  <script src="../assets/behavior.js"></script>
+</body>
+</html>

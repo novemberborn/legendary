@@ -58,6 +58,26 @@ window.files = [
     },
     {
       "level": 2,
+      "slug": "timeouterror",
+      "title": "TimeoutError"
+    },
+    {
+      "level": 2,
+      "slug": "timed",
+      "title": "timed"
+    },
+    {
+      "level": 2,
+      "slug": "concurrent",
+      "title": "concurrent"
+    },
+    {
+      "level": 2,
+      "slug": "fn",
+      "title": "fn"
+    },
+    {
+      "level": 2,
       "slug": "unhandledrejection-reason-",
       "title": "unhandledRejection(reason)"
     }
@@ -345,6 +365,111 @@ window.files = [
       "level": 1,
       "slug": "cancellationerror",
       "title": "CancellationError"
+    }
+  ]
+},
+{
+  "path": "lib/TimeoutError.js.html",
+  "originalName": "TimeoutError.js",
+  "originalPath": "lib/TimeoutError.js",
+  "name": "TimeoutError.js.html",
+  "lang": "javascript",
+  "title": "TimeoutError",
+  "toc": [
+    {
+      "level": 1,
+      "slug": "timeouterror",
+      "title": "TimeoutError"
+    }
+  ]
+},
+{
+  "path": "lib/timed.js.html",
+  "originalName": "timed.js",
+  "originalPath": "lib/timed.js",
+  "name": "timed.js.html",
+  "lang": "javascript",
+  "title": "timed",
+  "toc": [
+    {
+      "level": 1,
+      "slug": "timed",
+      "title": "timed"
+    },
+    {
+      "level": 2,
+      "slug": "delay-milliseconds-x-",
+      "title": "delay(milliseconds, x)"
+    },
+    {
+      "level": 2,
+      "slug": "timeout-milliseconds-x-",
+      "title": "timeout(milliseconds, x)"
+    }
+  ]
+},
+{
+  "path": "lib/concurrent.js.html",
+  "originalName": "concurrent.js",
+  "originalPath": "lib/concurrent.js",
+  "name": "concurrent.js.html",
+  "lang": "javascript",
+  "title": "concurrent",
+  "toc": [
+    {
+      "level": 1,
+      "slug": "concurrent",
+      "title": "concurrent"
+    },
+    {
+      "level": 2,
+      "slug": "sequence-arrayoftasks-args-",
+      "title": "sequence(arrayOfTasks, ...args)"
+    },
+    {
+      "level": 2,
+      "slug": "pipeline-arrayoftasks-firstargs-",
+      "title": "pipeline(arrayOfTasks, ...firstArgs)"
+    },
+    {
+      "level": 2,
+      "slug": "parallel-arrayoftasks-args-",
+      "title": "parallel(arrayOfTasks, ...args)"
+    }
+  ]
+},
+{
+  "path": "lib/fn.js.html",
+  "originalName": "fn.js",
+  "originalPath": "lib/fn.js",
+  "name": "fn.js.html",
+  "lang": "javascript",
+  "title": "fn",
+  "toc": [
+    {
+      "level": 1,
+      "slug": "fn",
+      "title": "fn"
+    },
+    {
+      "level": 2,
+      "slug": "call-normalfunction-args-",
+      "title": "call(normalFunction, ...args)"
+    },
+    {
+      "level": 2,
+      "slug": "apply-normalfunction-args-",
+      "title": "apply(normalFunction, args)"
+    },
+    {
+      "level": 2,
+      "slug": "lift-normalfunction-args-",
+      "title": "lift(normalFunction, ...args)"
+    },
+    {
+      "level": 2,
+      "slug": "compose-funcs-",
+      "title": "compose(...funcs)"
     }
   ]
 }

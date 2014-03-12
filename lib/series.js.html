@@ -97,8 +97,38 @@ callbacks are invoked when this number reaches the maximum concurrency.</p>
     blessed.be(<span class="hljs-keyword">this</span>, resolver, <span class="hljs-literal">true</span>);
   }
 }
-
-exports.Series = blessed.extended(Series);
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Besides instance methods, the following class methods are inherited from
+<code>Promise</code>:</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><ul>
+<li><code>Series.isInstance()</code></li>
+<li><code>Series.from()</code></li>
+<li><code>Series.rejected()</code></li>
+<li><code>Series.all()</code></li>
+<li><code>Series.any()</code></li>
+<li><code>Series.some()</code></li>
+<li><code>Series.join()</code></li>
+</ul>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.Series = blessed.extended(Series);
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">nextTurn</span><span class="hljs-params">(func, value)</span> {</span>
   trampoline.nextTurn({
