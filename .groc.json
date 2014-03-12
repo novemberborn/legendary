@@ -2,7 +2,7 @@
   "glob": [
     "README.md",
     "lib/main.js",
-    "lib/promises.js",
+    "lib/promise.js",
     "lib/series.js",
     "lib/CancellationError.js",
     "lib/TimeoutError.js",
