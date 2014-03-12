@@ -3,7 +3,7 @@
 var assert = require('chai').assert;
 var sentinels = require('./sentinels');
 
-var blessed = require('../lib/private/blessed');
+var main = require('../');
 var Promise = require('../').Promise;
 
 function SubPromise(resolver) {
@@ -15,11 +15,11 @@ function SubPromise(resolver) {
     return new SubPromise(resolver);
   }
 
-  if (resolver !== blessed.be) {
-    blessed.be(this, resolver);
+  if (resolver !== main.blessObject) {
+    main.blessObject(this, resolver);
   }
 }
-SubPromise.prototype = new Promise(blessed.be);
+SubPromise.prototype = new Promise(main.blessObject);
 SubPromise.prototype.constructor = SubPromise;
 
 function defer(constructor) {
@@ -88,9 +88,9 @@ describe('Subclassing', function() {
         });
 
     describe('can be configured to return a different subclass', function() {
-      var OtherPromise = blessed.extended(function OtherPromise(resolver) {
-        if (resolver !== blessed.be) {
-          blessed.be(this, resolver, true, SubPromise);
+      var OtherPromise = main.extendConstructor(function(resolver) {
+        if (resolver !== main.blessObject) {
+          main.blessObject(this, resolver, true, SubPromise);
         }
       });
 
@@ -144,19 +144,19 @@ describe('Subclassing', function() {
 
   });
 
-  describe('blessed.extended helper', function() {
+  describe('main.extendObject helper', function() {
     it('sets up inheritance', function() {
-      var Extended = blessed.extended(function() {});
+      var Extended = main.extendConstructor(function() {});
       assert.instanceOf(new Extended(), Promise);
     });
 
     it('keeps the constructor reference intact', function() {
-      var Extended = blessed.extended(function() {});
+      var Extended = main.extendConstructor(function() {});
       assert.strictEqual(new Extended().constructor, Extended);
     });
 
     it('copies constructor methods from Promise', function() {
-      var Extended = blessed.extended(function() {});
+      var Extended = main.extendConstructor(function() {});
       assert.strictEqual(Extended.from, Promise.from);
       assert.strictEqual(Extended.rejected, Promise.rejected);
       assert.strictEqual(Extended.all, Promise.all);
@@ -166,14 +166,14 @@ describe('Subclassing', function() {
     });
 
     it('sets up an `isInstance()` helper', function() {
-      var Extended = blessed.extended(function() {});
+      var Extended = main.extendConstructor(function() {});
       assert.isTrue(Extended.isInstance(new Extended()));
       assert.isFalse(Extended.isInstance(Promise.from()));
     });
 
     it('takes a base class argument', function() {
-      var Base = blessed.extended(function() {});
-      var Extended = blessed.extended(function() {}, Base);
+      var Base = main.extendConstructor(function() {});
+      var Extended = main.extendConstructor(function() {}, Base);
       assert.instanceOf(new Extended(), Promise);
       assert.instanceOf(new Extended(), Base);
     });

@@ -8,7 +8,7 @@ var sentinels = require('./sentinels');
 var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
 
-var blessed = require('../lib/private/blessed');
+var main = require('../');
 function SubPromise(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError();
@@ -18,11 +18,11 @@ function SubPromise(resolver) {
     return new SubPromise(resolver);
   }
 
-  if (resolver !== blessed.be) {
-    blessed.be(this, resolver, true);
+  if (resolver !== main.blessObject) {
+    main.blessObject(this, resolver, true);
   }
 }
-blessed.extended(SubPromise, Promise);
+main.extendConstructor(SubPromise, Promise);
 
 var slice = [].slice;
 

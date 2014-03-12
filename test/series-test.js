@@ -10,7 +10,7 @@ var Series = require('../').Series;
 var CancellationError = require('../').CancellationError;
 var delay = require('../').timed.delay;
 
-var blessed = require('../lib/private/blessed');
+var main = require('../');
 function SubSeries(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError();
@@ -20,11 +20,11 @@ function SubSeries(resolver) {
     return new SubSeries(resolver);
   }
 
-  if (resolver !== blessed.be) {
-    blessed.be(this, resolver, true);
+  if (resolver !== main.blessObject) {
+    main.blessObject(this, resolver, true);
   }
 }
-blessed.extended(SubSeries, Series);
+main.extendConstructor(SubSeries, Series);
 
 function identity(x) { return x; }
 function thrower(x) { throw x; }
