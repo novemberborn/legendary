@@ -3,7 +3,7 @@
 var assert = require('chai').assert;
 var sentinels = require('./sentinels');
 
-var blessed = require('../lib/blessed');
+var blessed = require('../lib/private/blessed');
 var Promise = require('../').Promise;
 
 function SubPromise(resolver) {

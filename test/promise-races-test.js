@@ -5,7 +5,7 @@ var sentinels = require('./sentinels');
 
 var Promise = require('../').Promise;
 
-var blessed = require('../lib/blessed');
+var blessed = require('../lib/private/blessed');
 function SubPromise(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError();

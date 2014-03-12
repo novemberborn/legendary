@@ -10,7 +10,7 @@ var Series = require('../').Series;
 var CancellationError = require('../').CancellationError;
 var delay = require('../').timed.delay;
 
-var blessed = require('../lib/blessed');
+var blessed = require('../lib/private/blessed');
 function SubSeries(resolver) {
   if (typeof resolver !== 'function') {
     throw new TypeError();

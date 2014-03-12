@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert;
 
-var blessed = require('../lib/blessed');
+var blessed = require('../lib/private/blessed');
 
 exports.testConstructor = function(Constructor) {
   it('throws a TypeError if not called with a resolver function', function() {
