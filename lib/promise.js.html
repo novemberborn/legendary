@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Promise - promises.js</title>
+  <title>Promise - promise.js</title>
 
   <link rel="stylesheet" href="../assets/style.css">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
   <meta name="groc-relative-root" content="../"/>
-  <meta name="groc-document-path" content="lib/promises.js"/>
+  <meta name="groc-document-path" content="lib/promise.js"/>
   
 </head>
 <body>
@@ -16,7 +16,7 @@
     <div id="meta">
       <code class="file-path">
       
-        <a href="https://github.com/novemberborn/legendary/blob/master/lib/promises.js">lib/promises.js</a>
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/promise.js">lib/promise.js</a>
       
       </code>
     </div>
@@ -27,10 +27,11 @@
       
         <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
 
-<span class="hljs-keyword">var</span> legendary = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./legendary'</span>);
-<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./blessed'</span>);
-<span class="hljs-keyword">var</span> ResolutionPropagator = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ResolutionPropagator'</span>);
+<span class="hljs-keyword">var</span> main = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./main'</span>);
 <span class="hljs-keyword">var</span> CancellationError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./CancellationError'</span>);
+
+<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/blessed'</span>);
+<span class="hljs-keyword">var</span> resolution = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/resolution'</span>);
 
 <span class="hljs-keyword">var</span> slice = [].slice;
 </div></div>
@@ -136,7 +137,7 @@ respectively.</p>
       
       
         <div class="code"><div class="wrapper">Promise.from = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> resolution.Propagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
       <span class="hljs-literal">false</span>, value
   ).promise();
 };
@@ -153,8 +154,8 @@ respectively.</p>
       
       
         <div class="code"><div class="wrapper">Promise.rejected = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(reason)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
-      <span class="hljs-literal">true</span>, reason, legendary.unhandledRejection(reason)
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> resolution.Propagator(<span class="hljs-keyword">this</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+      <span class="hljs-literal">true</span>, reason, main.unhandledRejection(reason)
   ).promise();
 };
 </div></div>
@@ -644,7 +645,7 @@ promise:</p>
   <span class="hljs-comment">//For `fork()` and `uncancellable()` we resolve the propagator with a</span>
   <span class="hljs-comment">//thenable. Passing a promise would lead it to attempt to adopt state</span>
   <span class="hljs-comment">//synchonously, and propagate cancellation to the current promise.</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> resolution.Propagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>).resolve(
     <span class="hljs-literal">false</span>, { then: <span class="hljs-keyword">this</span>.then }
   ).promise();
 };
@@ -680,7 +681,7 @@ cancelled.</p>
       
       
         <div class="code"><div class="wrapper">Promise.prototype.uncancellable = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> ResolutionPropagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>).resolve(
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> resolution.Propagator(<span class="hljs-keyword">this</span>.constructor, <span class="hljs-literal">null</span>, <span class="hljs-literal">false</span>).resolve(
     <span class="hljs-literal">false</span>, { then: <span class="hljs-keyword">this</span>.then }
   ).promise();
 };

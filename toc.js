@@ -29,17 +29,17 @@ window.files = [
   ]
 },
 {
-  "path": "lib/legendary.js.html",
-  "originalName": "legendary.js",
-  "originalPath": "lib/legendary.js",
-  "name": "legendary.js.html",
+  "path": "lib/main.js.html",
+  "originalName": "main.js",
+  "originalPath": "lib/main.js",
+  "name": "main.js.html",
   "lang": "javascript",
-  "title": "Legendary",
+  "title": "main",
   "toc": [
     {
       "level": 1,
-      "slug": "legendary",
-      "title": "Legendary"
+      "slug": "main",
+      "title": "main"
     },
     {
       "level": 2,
@@ -80,14 +80,24 @@ window.files = [
       "level": 2,
       "slug": "unhandledrejection-reason-",
       "title": "unhandledRejection(reason)"
+    },
+    {
+      "level": 2,
+      "slug": "blessobject-object-resolver-cancellable-propagationconstructor-",
+      "title": "blessObject(object, resolver, cancellable, propagationConstructor)"
+    },
+    {
+      "level": 2,
+      "slug": "extendconstructor-constructor-base-",
+      "title": "extendConstructor(Constructor, Base)"
     }
   ]
 },
 {
-  "path": "lib/promises.js.html",
-  "originalName": "promises.js",
-  "originalPath": "lib/promises.js",
-  "name": "promises.js.html",
+  "path": "lib/promise.js.html",
+  "originalName": "promise.js",
+  "originalPath": "lib/promise.js",
+  "name": "promise.js.html",
   "lang": "javascript",
   "title": "Promise",
   "toc": [

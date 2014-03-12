@@ -27,11 +27,11 @@
       
         <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
 
-<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./blessed'</span>);
-<span class="hljs-keyword">var</span> promises = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>);
-<span class="hljs-keyword">var</span> guards = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./guards'</span>);
-<span class="hljs-keyword">var</span> helpers = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./_helpers'</span>);
-<span class="hljs-keyword">var</span> trampoline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./trampoline'</span>);
+<span class="hljs-keyword">var</span> promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promise'</span>);
+
+<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/blessed'</span>);
+<span class="hljs-keyword">var</span> trampoline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/trampoline'</span>);
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/util'</span>);
 </div></div>
       
       </div>
@@ -39,7 +39,7 @@
       <div class="segment">
       
         <div class="comments ">
-          <div class="wrapper"><h1 id="series"><a href="#series" class="anchor"></a>Series</h1><p>A subclass of <a href="./promises.js.html#promise"><code>Promise</code></a> that makes it easier
+          <div class="wrapper"><h1 id="series"><a href="#series" class="anchor"></a>Series</h1><p>A subclass of <a href="./promise.js.html"><code>Promise</code></a> that makes it easier
 to interact with promises-for-arrays. Thus, a <code>Series</code> promise is expected to
 be fulfilled with an array.</p>
 </div>
@@ -139,7 +139,7 @@ callbacks are invoked when this number reaches the maximum concurrency.</p>
 }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">produceValue</span><span class="hljs-params">(promiseOrValue)</span> {</span>
-  <span class="hljs-keyword">if</span> (promises.Promise.isInstance(promiseOrValue)) {
+  <span class="hljs-keyword">if</span> (promise.Promise.isInstance(promiseOrValue)) {
     <span class="hljs-keyword">return</span> promiseOrValue.inspectState().value;
   } <span class="hljs-keyword">else</span> {
     <span class="hljs-keyword">return</span> promiseOrValue;
@@ -147,7 +147,7 @@ callbacks are invoked when this number reaches the maximum concurrency.</p>
 }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">invokeCancel</span><span class="hljs-params">(promiseOrValue)</span> {</span>
-  <span class="hljs-keyword">if</span> (promises.Promise.isInstance(promiseOrValue)) {
+  <span class="hljs-keyword">if</span> (promise.Promise.isInstance(promiseOrValue)) {
     promiseOrValue.cancel();
   }
 }
@@ -158,7 +158,7 @@ callbacks are invoked when this number reaches the maximum concurrency.</p>
     <span class="hljs-keyword">var</span> wrapped = { sourceIndex: index++ };
 
     <span class="hljs-keyword">var</span> result = iterator(item);
-    <span class="hljs-keyword">if</span> (promises.Promise.isInstance(result)) {
+    <span class="hljs-keyword">if</span> (promise.Promise.isInstance(result)) {
       <span class="hljs-keyword">return</span> result.then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(sortValue)</span> {</span>
         wrapped.sortValue = sortValue;
         <span class="hljs-keyword">return</span> wrapped;
@@ -212,7 +212,7 @@ array with the returned (promise fulfillment) values.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.mapParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> guards.array(<span class="hljs-keyword">this</span>, [], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
+  <span class="hljs-keyword">return</span> util.guardArray(<span class="hljs-keyword">this</span>, [], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> maxConcurrent !== <span class="hljs-string">'number'</span>) {
       <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">'Missing max concurrency number.'</span>);
     }
@@ -252,7 +252,7 @@ array with the returned (promise fulfillment) values.</p>
           <span class="hljs-keyword">var</span> result = acc[index] = iterator(arr[index]);
           index++;
           reachedEnd = reachedEnd || index === stopAt;
-          <span class="hljs-keyword">if</span> (promises.Promise.isInstance(result)) {
+          <span class="hljs-keyword">if</span> (promise.Promise.isInstance(result)) {
             result.then(oneCompleted, oneFailed);
           } <span class="hljs-keyword">else</span> {
             oneCompleted();
@@ -289,7 +289,7 @@ has completed.</p>
       
         <div class="code"><div class="wrapper">Series.prototype.each = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(iterator)</span> {</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, iterator)
-      .then(helpers.makeUndefined).to(promises.Promise);
+      .then(util.makeUndefined).to(promise.Promise);
 };
 </div></div>
       
@@ -305,7 +305,7 @@ has completed.</p>
       
         <div class="code"><div class="wrapper">Series.prototype.eachParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, iterator)
-      .then(helpers.makeUndefined).to(promises.Promise);
+      .then(util.makeUndefined).to(promise.Promise);
 };
 </div></div>
       
@@ -321,8 +321,8 @@ which <code>iterator</code> returned a truey (promise fulfillment) value.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.filter = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, helpers.skipIfFalsy(iterator))
-      .then(helpers.removeSkipped);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, util.skipIfFalsy(iterator))
+      .then(util.removeSkipped);
 };
 </div></div>
       
@@ -338,8 +338,8 @@ The resulting array retains the order of the original array.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.filterParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, helpers.skipIfFalsy(iterator))
-      .then(helpers.removeSkipped);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, util.skipIfFalsy(iterator))
+      .then(util.removeSkipped);
 };
 </div></div>
       
@@ -355,8 +355,8 @@ which <code>iterator</code> returned a falsey (promise fulfillment) value.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.filterOut = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, helpers.skipIfTruthy(iterator))
-      .then(helpers.removeSkipped);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, util.skipIfTruthy(iterator))
+      .then(util.removeSkipped);
 };
 </div></div>
       
@@ -372,8 +372,8 @@ The resulting array retains the order of the original array.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.filterOutParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, helpers.skipIfTruthy(iterator))
-      .then(helpers.removeSkipped);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, util.skipIfTruthy(iterator))
+      .then(util.removeSkipped);
 };
 </div></div>
       
@@ -389,7 +389,7 @@ array containing the returned (promise fulfillment) values.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.concat = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, iterator).then(helpers.flatten);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(<span class="hljs-number">1</span>, iterator).then(util.flatten);
 };
 </div></div>
       
@@ -406,7 +406,7 @@ returned them was invoked, not when its returned promise fulfilled.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.concatParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, iterator).then(helpers.flatten);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, iterator).then(util.flatten);
 };
 </div></div>
       
@@ -448,8 +448,8 @@ values concurrently, and then use this method with a synchronous iterator.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.foldl = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(initialValue, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> guards.array(<span class="hljs-keyword">this</span>, initialValue, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+  <span class="hljs-keyword">return</span> util.guardArray(<span class="hljs-keyword">this</span>, initialValue, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promise.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
       <span class="hljs-keyword">var</span> index = <span class="hljs-number">0</span>, stopAt = arr.length;
       <span class="hljs-keyword">var</span> reachedEnd = <span class="hljs-literal">false</span>;
       <span class="hljs-keyword">var</span> currentPromise;
@@ -464,7 +464,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
           value = iterator(value, arr[index]);
           index++;
           reachedEnd = reachedEnd || index === stopAt;
-          <span class="hljs-keyword">if</span> (promises.Promise.isInstance(value)) {
+          <span class="hljs-keyword">if</span> (promise.Promise.isInstance(value)) {
             currentPromise = value;
             value.then(applyIterator, reject);
           } <span class="hljs-keyword">else</span> {
@@ -475,7 +475,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
         }
       }
 
-      <span class="hljs-keyword">if</span> (promises.Promise.isInstance(initialValue)) {
+      <span class="hljs-keyword">if</span> (promise.Promise.isInstance(initialValue)) {
         currentPromise = initialValue.then(applyIterator, reject);
       } <span class="hljs-keyword">else</span> {
         nextTurn(applyIterator, initialValue);
@@ -488,7 +488,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
         reachedEnd = <span class="hljs-literal">true</span>;
       };
     });
-  }).to(promises.Promise);
+  }).to(promise.Promise);
 };
 </div></div>
       
@@ -503,8 +503,8 @@ values concurrently, and then use this method with a synchronous iterator.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.foldr = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(initialValue, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> guards.array(<span class="hljs-keyword">this</span>, initialValue, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+  <span class="hljs-keyword">return</span> util.guardArray(<span class="hljs-keyword">this</span>, initialValue, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(arr)</span> {</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promise.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
       <span class="hljs-keyword">var</span> index = arr.length - <span class="hljs-number">1</span>;
       <span class="hljs-keyword">var</span> reachedEnd = <span class="hljs-literal">false</span>;
       <span class="hljs-keyword">var</span> currentPromise;
@@ -518,7 +518,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
           value = iterator(value, arr[index]);
           index--;
           reachedEnd = reachedEnd || index &lt; <span class="hljs-number">0</span>;
-          <span class="hljs-keyword">if</span> (promises.Promise.isInstance(value)) {
+          <span class="hljs-keyword">if</span> (promise.Promise.isInstance(value)) {
             currentPromise = value;
             value.then(applyIterator, reject);
           } <span class="hljs-keyword">else</span> {
@@ -529,7 +529,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
         }
       }
 
-      <span class="hljs-keyword">if</span> (promises.Promise.isInstance(initialValue)) {
+      <span class="hljs-keyword">if</span> (promise.Promise.isInstance(initialValue)) {
         currentPromise = initialValue.then(applyIterator, reject);
       } <span class="hljs-keyword">else</span> {
         nextTurn(applyIterator, initialValue);
@@ -542,7 +542,7 @@ values concurrently, and then use this method with a synchronous iterator.</p>
         reachedEnd = <span class="hljs-literal">true</span>;
       };
     });
-  }).to(promises.Promise);
+  }).to(promise.Promise);
 };
 </div></div>
       
@@ -588,9 +588,9 @@ from <code>iterator</code>.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.detectParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, helpers.shortcutDetect(iterator))
-      .to(promises.Promise)
-      .then(helpers.makeUndefined, helpers.extractShortcutValue);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, util.shortcutDetect(iterator))
+      .to(promise.Promise)
+      .then(util.makeUndefined, util.extractShortcutValue);
 };
 </div></div>
       
@@ -632,9 +632,9 @@ value, or <code>false</code> if no iterator does so.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.someParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, helpers.shortcutSome(iterator))
-      .to(promises.Promise)
-      .then(helpers.strictlyTrue, helpers.extractShortcutValue);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, util.shortcutSome(iterator))
+      .to(promise.Promise)
+      .then(util.strictlyTrue, util.extractShortcutValue);
 };
 </div></div>
       
@@ -676,9 +676,9 @@ value, or <code>false</code> when the an iteration does not.</p>
       
       
         <div class="code"><div class="wrapper">Series.prototype.everyParallel = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(maxConcurrent, iterator)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, helpers.shortcutNotEvery(iterator))
-      .to(promises.Promise)
-      .then(helpers.makeTrue, helpers.extractShortcutValue);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.mapParallel(maxConcurrent, util.shortcutNotEvery(iterator))
+      .to(promise.Promise)
+      .then(util.makeTrue, util.extractShortcutValue);
 };
 </div></div>
       

@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Legendary - legendary.js</title>
+  <title>main - main.js</title>
 
   <link rel="stylesheet" href="../assets/style.css">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
   <meta name="groc-relative-root" content="../"/>
-  <meta name="groc-document-path" content="lib/legendary.js"/>
+  <meta name="groc-document-path" content="lib/main.js"/>
   
 </head>
 <body>
@@ -16,7 +16,7 @@
     <div id="meta">
       <code class="file-path">
       
-        <a href="https://github.com/novemberborn/legendary/blob/master/lib/legendary.js">lib/legendary.js</a>
+        <a href="https://github.com/novemberborn/legendary/blob/master/lib/main.js">lib/main.js</a>
       
       </code>
     </div>
@@ -26,6 +26,8 @@
       
       
         <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
+
+<span class="hljs-keyword">var</span> blessed = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./private/blessed'</span>);
 </div></div>
       
       </div>
@@ -33,7 +35,7 @@
       <div class="segment">
       
         <div class="comments ">
-          <div class="wrapper"><h1 id="legendary"><a href="#legendary" class="anchor"></a>Legendary</h1></div>
+          <div class="wrapper"><h1 id="main"><a href="#main" class="anchor"></a>main</h1></div>
         </div>
       
       
@@ -45,12 +47,12 @@
           <div class="wrapper"><h2 id="promise"><a href="#promise" class="anchor"></a>Promise</h2><p>A <a href="http://promisesaplus.com/">Promise/A+</a> compatible promise constructor,
 with additional functionality such as support for subclassing, helper methods
 on the constructor and extra instance methods.
-<a href="./promises.js.html#promise">Read more</a>.</p>
+<a href="./promise.js.html">Read more</a>.</p>
 </div>
         </div>
       
       
-        <div class="code"><div class="wrapper">exports.Promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>).Promise;
+        <div class="code"><div class="wrapper">exports.Promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promise'</span>).Promise;
 </div></div>
       
       </div>
@@ -58,7 +60,7 @@ on the constructor and extra instance methods.
       <div class="segment">
       
         <div class="comments ">
-          <div class="wrapper"><h2 id="series"><a href="#series" class="anchor"></a>Series</h2><p>A subclass of <a href="./promises.js.html#promise"><code>Promise</code></a> that makes it easier
+          <div class="wrapper"><h2 id="series"><a href="#series" class="anchor"></a>Series</h2><p>A subclass of <a href="./promise.js.html"><code>Promise</code></a> that makes it easier
 to interact with promises-for-arrays.
 <a href="./series.js.html#series">Read more</a>.</p>
 </div>
@@ -153,6 +155,48 @@ the rejection is handled. Placeholder for debugging tools.</p>
       
       
         <div class="code"><div class="wrapper">exports.unhandledRejection = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="blessobject-object-resolver-cancellable-propagationconstructor-"><a href="#blessobject-object-resolver-cancellable-propagationconstructor-" class="anchor"></a>blessObject(object, resolver, cancellable, propagationConstructor)</h2><p>Bless an object with Legendary&#39;s promise functionality. Assigns
+<code>object.then</code>, <code>object.inspectState</code>, and if applicable <code>object.cancel</code>.
+Invokes the <code>resolver</code> function with appropriate <code>resolve</code> and <code>reject</code>
+methods.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>cancellable</code> is truey, cancellation is enabled for the object. Specify
+<code>propagationConstructor</code> to control the instances of promises returned by
+calling <code>object.then()</code>. Defaults to <code>object.constructor</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.blessObject = blessed.be;
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><h2 id="extendconstructor-constructor-base-"><a href="#extendconstructor-constructor-base-" class="anchor"></a>extendConstructor(Constructor, Base)</h2><p>Set up <code>Constructor</code> so it correctly extends from <code>Base</code>. Defaults to
+extending from <code>Promise</code>. Returns <code>Constructor</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">exports.extendConstructor = blessed.extended;
 </div></div>
       
       </div>

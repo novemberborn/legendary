@@ -27,7 +27,7 @@
       
         <div class="code"><div class="wrapper"><span class="hljs-pi">'use strict'</span>;
 
-<span class="hljs-keyword">var</span> promises = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promises'</span>);
+<span class="hljs-keyword">var</span> promise = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./promise'</span>);
 <span class="hljs-keyword">var</span> TimeoutError = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./TimeoutError'</span>);
 </div></div>
       
@@ -125,8 +125,8 @@ you could use:</p>
       
       
         <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">delay</span><span class="hljs-params">(milliseconds, x)</span> {</span>
-  <span class="hljs-keyword">return</span> promises.Promise.from(x).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve)</span> {</span>
+  <span class="hljs-keyword">return</span> promise.Promise.from(x).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(value)</span> {</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promise.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve)</span> {</span>
       <span class="hljs-keyword">return</span> timer(milliseconds, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
         resolve(value);
       });
@@ -182,12 +182,12 @@ respectively. Otherwise the returned promise is rejected with a
       
       
         <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">timeout</span><span class="hljs-params">(milliseconds, x)</span> {</span>
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promises.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> promise.Promise(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
     <span class="hljs-keyword">var</span> abort = timer(milliseconds, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
       reject(<span class="hljs-keyword">new</span> TimeoutError(<span class="hljs-string">'Timed out after '</span> + milliseconds + <span class="hljs-string">'ms'</span>));
     });
 
-    promises.Promise.from(x)
+    promise.Promise.from(x)
       .tap(resolve, reject)
       .ensure(abort);
 
