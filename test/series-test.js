@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 var util = require('./util');
 
 var Promise = require('../').Promise;
@@ -120,26 +120,27 @@ describe('Series#mapParallel()', function() {
       });
 
   it('promises rejection if the iterator throws', function() {
-    var result = Series.from([sentinels.one]).mapParallel(1, thrower);
+    var result = Series.from([sentinels.foo]).mapParallel(1, thrower);
     return assert.isRejected(result, sentinels.Sentinel);
   });
 
   it('promises rejection with the reason of the first rejected promise ' +
       'returned by the iterator',
       function() {
-        var arr = [null, Promise.rejected(sentinels.one), Promise.rejected()];
+        var arr = [null, Promise.rejected(sentinels.foo), Promise.rejected()];
         var result = Series.from(arr).mapParallel(1, identity);
         return assert.isRejected(result, sentinels.Sentinel);
       });
 
   it('calls iterator with item, in order', function() {
     var spy = sinon.spy();
-    return Series.from(sentinels.arr()).mapParallel(1, spy)
+    var arr = sentinels.stubArray();
+    return Series.from(arr).mapParallel(1, spy)
       .then(function() {
         assert.calledThrice(spy);
-        assert.deepEqual(spy.firstCall.args, [sentinels.one]);
-        assert.deepEqual(spy.secondCall.args, [sentinels.two]);
-        assert.deepEqual(spy.thirdCall.args, [sentinels.three]);
+        assert.matchingSentinels(spy.firstCall.args, [arr[0]]);
+        assert.matchingSentinels(spy.secondCall.args, [arr[1]]);
+        assert.matchingSentinels(spy.thirdCall.args, [arr[2]]);
       });
   });
 
@@ -190,9 +191,9 @@ describe('Series#mapParallel()', function() {
   });
 
   it('stops iteration when cancelled', function() {
-    var arr = sentinels.arr();
+    var arr = sentinels.stubArray();
     var spy = sinon.spy(function(item) {
-      if (item === sentinels.two) {
+      if (item === arr[1]) {
         result.cancel();
       }
     });
@@ -205,15 +206,15 @@ describe('Series#mapParallel()', function() {
   it('propagates cancellation to iterator-returned promises', function() {
     var p1 = new Promise(function() {});
     var p2 = new Promise(function() {});
-    var arr = sentinels.arr();
+    var arr = sentinels.stubArray();
     var result = Series.from(arr).mapParallel(3, function(x) {
-      if (x === sentinels.one) {
+      if (x === arr[0]) {
         return x;
       }
-      if (x === sentinels.two) {
+      if (x === arr[1]) {
         return p1;
       }
-      if (x === sentinels.three) {
+      if (x === arr[2]) {
         setImmediate(result.cancel);
         return p2;
       }
@@ -320,37 +321,39 @@ testIterators(
         function() {
           it('does so for an empty array', function() {
             var spy = sinon.spy();
-            var result = Series.from([])[method](sentinels.one, spy);
-            return assert.eventually.strictEqual(result, sentinels.one).then(
-                function() {
-                  return assert.notCalled(spy);
-                });
+            var result = Series.from([])[method](sentinels.foo, spy);
+            return assert.eventually.matchingSentinels(
+              result, sentinels.foo
+            ).then(function() {
+              return assert.notCalled(spy);
+            });
           });
 
           it('does so for a non-array', function() {
             var spy = sinon.spy();
-            var result = Series.from(42)[method](sentinels.one, spy);
-            return assert.eventually.strictEqual(result, sentinels.one).then(
-                function() {
-                  return assert.notCalled(spy);
-                });
+            var result = Series.from(42)[method](sentinels.foo, spy);
+            return assert.eventually.matchingSentinels(
+              result, sentinels.foo
+            ).then(function() {
+              return assert.notCalled(spy);
+            });
           });
         });
 
     describe('accepts a promise for the initial value', function() {
       it('waits until it’s resolved', function() {
         var spy = sinon.spy(identity);
-        var initialValue = Promise.from(sentinels.one);
+        var initialValue = Promise.from(sentinels.foo);
         var result = Series.from([true])[method](initialValue, spy);
         return result.then(function() {
           assert.calledOnce(spy);
-          assert.calledWithExactly(spy, sentinels.one, true);
+          assert.calledWithExactly(spy, sentinels.foo, true);
         });
       });
 
       it('rejects if the initial value rejects', function() {
         var spy = sinon.spy(identity);
-        var initialValue = Promise.rejected(sentinels.one);
+        var initialValue = Promise.rejected(sentinels.foo);
         var result = Series.from([true])[method](initialValue, spy);
         return assert.isRejected(result, sentinels.Sentinel);
       });
@@ -366,24 +369,24 @@ testIterators(
     it('calls iterator with initial value and item, in order',
         function() {
           var spy = sinon.spy(identity);
-          var arr = sentinels.arr();
-          var result = Series.from(arr)[method](sentinels.one, spy);
+          var arr = sentinels.stubArray();
+          var result = Series.from(arr)[method](sentinels.foo, spy);
           return result.then(function() {
             assert.calledThrice(spy);
             if (fromLeft) {
-              assert.deepEqual(spy.firstCall.args,
-                  [sentinels.one, sentinels.one]);
-              assert.deepEqual(spy.secondCall.args,
-                  [sentinels.one, sentinels.two]);
-              assert.deepEqual(spy.thirdCall.args,
-                  [sentinels.one, sentinels.three]);
+              assert.matchingSentinels(spy.firstCall.args,
+                  [sentinels.foo, arr[0]]);
+              assert.matchingSentinels(spy.secondCall.args,
+                  [sentinels.foo, arr[1]]);
+              assert.matchingSentinels(spy.thirdCall.args,
+                  [sentinels.foo, arr[2]]);
             } else {
-              assert.deepEqual(spy.firstCall.args,
-                  [sentinels.one, sentinels.three]);
-              assert.deepEqual(spy.secondCall.args,
-                  [sentinels.one, sentinels.two]);
-              assert.deepEqual(spy.thirdCall.args,
-                  [sentinels.one, sentinels.one]);
+              assert.matchingSentinels(spy.firstCall.args,
+                  [sentinels.foo, arr[2]]);
+              assert.matchingSentinels(spy.secondCall.args,
+                  [sentinels.foo, arr[1]]);
+              assert.matchingSentinels(spy.thirdCall.args,
+                  [sentinels.foo, arr[0]]);
             }
           });
         });
@@ -409,7 +412,7 @@ testIterators(
           return told;
         }
         if (told === Error) {
-          throw sentinels.one;
+          throw sentinels.foo;
         }
       }
 
@@ -433,9 +436,9 @@ testIterators(
     });
 
     it('stops iteration when cancelled', function() {
-      var arr = sentinels.arr();
+      var arr = sentinels.stubArray();
       var spy = sinon.spy(function(_, item) {
-        if (item !== sentinels.two) {
+        if (item !== arr[1]) {
           result.cancel();
         }
       });
@@ -499,34 +502,37 @@ function testCheckers(methods, describeMore) {
 testCheckers(['detect', 'detectParallel'],
     function(callMethod, method) {
       it('returns the detected item', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
-            function(item) { return item === sentinels.two; });
-        return assert.eventually.strictEqual(result, sentinels.two);
+        var arr = sentinels.stubArray();
+        var result = callMethod(Series.from(arr),
+            function(item) { return item === arr[1]; });
+        return assert.eventually.matchingSentinels(result, arr[1]);
       });
 
       it('returns undefined if it can’t detect the item', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.stubArray()),
             function() { return false; });
         return assert.eventually.isUndefined(result);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
-            function(item) { return Promise.from(item === sentinels.two); });
-        return assert.eventually.strictEqual(result, sentinels.two);
+        var arr = sentinels.stubArray();
+        var result = callMethod(Series.from(arr),
+            function(item) { return Promise.from(item === arr[1]); });
+        return assert.eventually.matchingSentinels(result, arr[1]);
       });
 
       if (method === 'detect') {
         it('indeed stops iteration once an item is detected', function() {
+          var arr = sentinels.stubArray();
           var spy = sinon.spy(function(item) {
-            return item === sentinels.two;
+            return item === arr[1];
           });
-          var result = callMethod(Series.from(sentinels.arr()), spy);
-          return assert.eventually.strictEqual(result, sentinels.two)
+          var result = callMethod(Series.from(arr), spy);
+          return assert.eventually.matchingSentinels(result, arr[1])
               .then(function() {
                 assert.calledTwice(spy);
-                assert.deepEqual(spy.firstCall.args, [sentinels.one]);
-                assert.deepEqual(spy.secondCall.args, [sentinels.two]);
+                assert.matchingSentinels(spy.firstCall.args, [arr[0]]);
+                assert.matchingSentinels(spy.secondCall.args, [arr[1]]);
               });
         });
       }
@@ -535,35 +541,38 @@ testCheckers(['detect', 'detectParallel'],
 testCheckers(['some', 'someParallel'],
     function(callMethod, method) {
       it('returns `true` if an iterator returns a truthy value', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
-            function(item) { return item === sentinels.two; });
+        var arr = sentinels.stubArray();
+        var result = callMethod(Series.from(arr),
+            function(item) { return item === arr[1]; });
         return assert.eventually.isTrue(result);
       });
 
       it('returns `false` if no iterator returns a truthy value', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.stubArray()),
             function() { return false; });
         return assert.eventually.isFalse(result);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
-            function(item) { return Promise.from(item === sentinels.two); });
+        var arr = sentinels.stubArray();
+        var result = callMethod(Series.from(arr),
+            function(item) { return Promise.from(item === arr[1]); });
         return assert.eventually.isTrue(result);
       });
 
       if (method === 'some') {
         it('indeed stops iteration once an iterator returns a truthy value',
             function() {
+              var arr = sentinels.stubArray();
               var spy = sinon.spy(function(item) {
-                return item === sentinels.two;
+                return item === arr[1];
               });
-              var result = callMethod(Series.from(sentinels.arr()), spy);
+              var result = callMethod(Series.from(arr), spy);
               return assert.eventually.isTrue(result)
                   .then(function() {
                     assert.calledTwice(spy);
-                    assert.deepEqual(spy.firstCall.args, [sentinels.one]);
-                    assert.deepEqual(spy.secondCall.args, [sentinels.two]);
+                    assert.matchingSentinels(spy.firstCall.args, [arr[0]]);
+                    assert.matchingSentinels(spy.secondCall.args, [arr[1]]);
                   });
             });
       }
@@ -572,19 +581,20 @@ testCheckers(['some', 'someParallel'],
 testCheckers(['every', 'everyParallel'],
     function(callMethod, method) {
       it('returns `true` if all iterators return a truthy value', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.stubArray()),
             function() { return true; });
         return assert.eventually.isTrue(result);
       });
 
       it('returns `false` if an iterator returns a falsy value', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
-            function(item) { return item !== sentinels.two; });
+        var arr = sentinels.stubArray();
+        var result = callMethod(Series.from(arr),
+            function(item) { return item !== arr[1]; });
         return assert.eventually.isFalse(result);
       });
 
       it('handles the iterator returning a promise', function() {
-        var result = callMethod(Series.from(sentinels.arr()),
+        var result = callMethod(Series.from(sentinels.stubArray()),
             function() { return Promise.from(true); });
         return assert.eventually.isTrue(result);
       });
@@ -592,15 +602,16 @@ testCheckers(['every', 'everyParallel'],
       if (method === 'every') {
         it('indeed stops iteration once an iterator returns a falsy value',
             function() {
+              var arr = sentinels.stubArray();
               var spy = sinon.spy(function(item) {
-                return item !== sentinels.two;
+                return item !== arr[1];
               });
-              var result = callMethod(Series.from(sentinels.arr()), spy);
+              var result = callMethod(Series.from(arr), spy);
               return assert.eventually.isFalse(result)
                   .then(function() {
                     assert.calledTwice(spy);
-                    assert.deepEqual(spy.firstCall.args, [sentinels.one]);
-                    assert.deepEqual(spy.secondCall.args, [sentinels.two]);
+                    assert.matchingSentinels(spy.firstCall.args, [arr[0]]);
+                    assert.matchingSentinels(spy.secondCall.args, [arr[1]]);
                   });
             });
       }
@@ -639,17 +650,20 @@ testCheckers(['every', 'everyParallel'],
     }
 
     it('results in a correctly sorted array', function() {
-      var four = new sentinels.Sentinel();
-      var arr = [sentinels.three, sentinels.two, four, sentinels.one];
+      var items = [0, 1, 2, 3].map(function(index) {
+        return new sentinels.Sentinel('@' + index, {
+          id: { value: index }
+        });
+      });
+      var arr = [items[2], items[1], items[3], items[0]];
       var result = callMethod(Series.from(arr), function(item) {
-        if (item !== four) {
+        if (item !== items[3]) {
           return Promise.from(item.id);
         }
         return item.id;
       });
       return assert.eventually.strictEqual(result, arr).then(function() {
-        var expected = [sentinels.one, sentinels.two, sentinels.three, four];
-        assert.deepEqual(arr, expected);
+        assert.matchingSentinels(arr, items);
       });
     });
   });

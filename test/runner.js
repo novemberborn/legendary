@@ -5,6 +5,7 @@ var Mocha = require('mocha');
 require('mocha-as-promised')([Mocha]);
 
 var chai = require('chai');
+chai.use(require('chai-sentinels'));
 chai.use(require('chai-as-promised'));
 require('sinon').assert.expose(chai.assert, { prefix: '' });
 

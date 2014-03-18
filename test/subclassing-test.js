@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('chai').assert;
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var main = require('../');
 var Promise = require('../').Promise;
@@ -51,7 +51,7 @@ describe('Subclassing', function() {
     it('preserves subclass when onFulfilled callback returns value',
         function() {
           var dfd = defer(SubPromise);
-          dfd.resolve(sentinels.one);
+          dfd.resolve(sentinels.foo);
           // Internally, the first then creates a fulfilled propagator.
           // The second then() also creates a fulfilled propagator which
           // must yield a promise of the same subclass.
@@ -96,19 +96,19 @@ describe('Subclassing', function() {
 
       it('duly returns an instance of that other class', function() {
         var p1 = new OtherPromise(function(resolve) {
-          resolve(sentinels.one);
+          resolve(sentinels.foo);
         });
         var p2 = p1.then(identity);
 
         assert.notInstanceOf(p2, OtherPromise);
         assert.instanceOf(p2, SubPromise);
 
-        return assert.eventually.strictEqual(p2, sentinels.one);
+        return assert.eventually.matchingSentinels(p2, sentinels.foo);
       });
 
       it('does not shortcut when called without callbacks', function() {
         var p1 = new OtherPromise(function(resolve) {
-          resolve(sentinels.one);
+          resolve(sentinels.foo);
         });
         var p2 = p1.then();
 
@@ -124,22 +124,22 @@ describe('Subclassing', function() {
         function() {
           var dfd1 = defer(SubPromise);
           var dfd2 = defer(SubPromise);
-          dfd2.resolve(sentinels.one);
+          dfd2.resolve(sentinels.foo);
           dfd1.resolve(dfd2.promise);
           var state = dfd1.promise.inspectState();
           assert(state.isFulfilled);
-          assert.strictEqual(state.value, sentinels.one);
+          assert.matchingSentinels(state.value, sentinels.foo);
         });
 
     it('synchronously adopts state of a promise of a different subclass',
         function() {
           var dfd1 = defer(SubPromise);
           var dfd2 = defer(Promise);
-          dfd2.resolve(sentinels.one);
+          dfd2.resolve(sentinels.foo);
           dfd1.resolve(dfd2.promise);
           var state = dfd1.promise.inspectState();
           assert(state.isFulfilled);
-          assert.strictEqual(state.value, sentinels.one);
+          assert.matchingSentinels(state.value, sentinels.foo);
         });
 
   });

@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('chai').assert;
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var TimeoutError = require('../').TimeoutError;
 
@@ -24,6 +24,7 @@ describe('TimeoutError', function() {
   });
 
   it('can be given a message', function() {
-    assert.strictEqual(new TimeoutError(sentinels.one).message, sentinels.one);
+    assert.matchingSentinels(
+      new TimeoutError(sentinels.foo).message, sentinels.foo);
   });
 });

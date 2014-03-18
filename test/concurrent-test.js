@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
 var Series = require('../').Series;
@@ -51,9 +51,9 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
 
   it('passes arguments to all tasks', function() {
     var spy = sinon.spy();
-    return concurrent.sequence([spy, spy, spy], sentinels.one, sentinels.two)
+    return concurrent.sequence([spy, spy, spy], sentinels.foo, sentinels.bar)
         .then(function() {
-          assert.alwaysCalledWithExactly(spy, sentinels.one, sentinels.two);
+          assert.alwaysCalledWithExactly(spy, sentinels.foo, sentinels.bar);
         });
   });
 
@@ -61,26 +61,24 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
     var spy = sinon.spy();
     return concurrent.sequence(
       [spy, spy, spy],
-      Promise.from(sentinels.one),
-      Promise.from(sentinels.two)
+      Promise.from(sentinels.foo),
+      Promise.from(sentinels.bar)
     ).then(function() {
-      assert.alwaysCalledWithExactly(spy, sentinels.one, sentinels.two);
+      assert.alwaysCalledWithExactly(spy, sentinels.foo, sentinels.bar);
     });
   });
 
   it('promises an array of task results', function() {
-    var tasks = sentinels.arr(function(s) {
-      return function() {
-        return s;
-      };
+    var arr = sentinels.stubArray();
+    var tasks = arr.map(function(s) {
+      return function() { return s; };
     });
-    return assert.eventually.deepEqual(concurrent.sequence(tasks),
-        sentinels.arr());
+    return assert.eventually.matchingSentinels(concurrent.sequence(tasks), arr);
   });
 
   it('rejects when a task throws', function() {
     var spies = thrice(sinon.spy);
-    spies[1] = sinon.spy(function() { throw sentinels.two; });
+    spies[1] = sinon.spy(function() { throw sentinels.bar; });
     return assert.isRejected(concurrent.sequence(spies), sentinels.Sentinel)
         .then(function() {
           assert.notCalled(spies[2]);
@@ -90,7 +88,7 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
   it('rejects when a task returns a rejected promise', function() {
     var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
-      return Promise.rejected(sentinels.two);
+      return Promise.rejected(sentinels.bar);
     });
     return assert.isRejected(concurrent.sequence(spies), sentinels.Sentinel)
         .then(function() {
@@ -113,7 +111,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
 
   it('resolves to undefined when no tasks are supplied', function() {
     return assert.eventually.isUndefined(
-      concurrent.pipeline.apply(concurrent, [[]].concat(sentinels.arr()))
+      concurrent.pipeline.apply(concurrent, [[]].concat(sentinels.foo))
     );
   });
 
@@ -124,11 +122,11 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
 
   it('passes arguments to initial task', function() {
     var spies = thrice(sinon.spy);
-    return concurrent.pipeline(spies, sentinels.one, sentinels.two)
+    return concurrent.pipeline(spies, sentinels.foo, sentinels.bar)
         .then(function() {
-          assert.calledWithExactly(spies[0], sentinels.one, sentinels.two);
-          assert.neverCalledWith(spies[1], sentinels.one, sentinels.two);
-          assert.neverCalledWith(spies[2], sentinels.one, sentinels.two);
+          assert.calledWithExactly(spies[0], sentinels.foo, sentinels.bar);
+          assert.neverCalledWith(spies[1], sentinels.foo, sentinels.bar);
+          assert.neverCalledWith(spies[2], sentinels.foo, sentinels.bar);
         });
   });
 
@@ -136,27 +134,28 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
     var spy = sinon.spy();
     return concurrent.pipeline(
       [spy],
-      Promise.from(sentinels.one),
-      Promise.from(sentinels.two)
+      Promise.from(sentinels.foo),
+      Promise.from(sentinels.bar)
     ).then(function() {
-      assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+      assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
     });
   });
 
   it('passes result of one task to the next', function() {
-    var spies = sentinels.arr(function(s) {
+    var arr = sentinels.stubArray();
+    var spies = arr.map(function(s) {
       return sinon.spy(function() { return s; });
     });
     return concurrent.pipeline(spies).then(function(result) {
-      assert.calledWithExactly(spies[1], sentinels.one);
-      assert.calledWithExactly(spies[2], sentinels.two);
-      assert.strictEqual(result, sentinels.three);
+      assert.calledWithExactly(spies[1], arr[0]);
+      assert.calledWithExactly(spies[2], arr[1]);
+      assert.matchingSentinels(result, arr[2]);
     });
   });
 
   it('rejects when a task throws', function() {
     var spies = thrice(sinon.spy);
-    spies[1] = sinon.spy(function() { throw sentinels.two; });
+    spies[1] = sinon.spy(function() { throw sentinels.bar; });
     return assert.isRejected(concurrent.pipeline(spies), sentinels.Sentinel)
         .then(function() {
           assert.notCalled(spies[2]);
@@ -166,7 +165,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
   it('rejects when a task returns a rejected promise', function() {
     var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
-      return Promise.rejected(sentinels.two);
+      return Promise.rejected(sentinels.bar);
     });
     return assert.isRejected(concurrent.pipeline(spies), sentinels.Sentinel)
         .then(function() {
@@ -202,9 +201,9 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
 
   it('passes arguments to all tasks', function() {
     var spy = sinon.spy();
-    return concurrent.parallel([spy, spy, spy], sentinels.one, sentinels.two)
+    return concurrent.parallel([spy, spy, spy], sentinels.foo, sentinels.bar)
         .then(function() {
-          assert.alwaysCalledWithExactly(spy, sentinels.one, sentinels.two);
+          assert.alwaysCalledWithExactly(spy, sentinels.foo, sentinels.bar);
         });
   });
 
@@ -212,26 +211,24 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
     var spy = sinon.spy();
     return concurrent.parallel(
       [spy, spy, spy],
-      Promise.from(sentinels.one),
-      Promise.from(sentinels.two)
+      Promise.from(sentinels.foo),
+      Promise.from(sentinels.bar)
     ).then(function() {
-      assert.alwaysCalledWithExactly(spy, sentinels.one, sentinels.two);
+      assert.alwaysCalledWithExactly(spy, sentinels.foo, sentinels.bar);
     });
   });
 
   it('promises an array of task results', function() {
-    var tasks = sentinels.arr(function(s) {
-      return function() {
-        return s;
-      };
+    var arr = sentinels.stubArray();
+    var tasks = arr.map(function(s) {
+      return function() { return s; };
     });
-    return assert.eventually.deepEqual(concurrent.parallel(tasks),
-        sentinels.arr());
+    return assert.eventually.matchingSentinels(concurrent.parallel(tasks), arr);
   });
 
   it('rejects when a task throws', function() {
     var spies = thrice(sinon.spy);
-    spies[1] = sinon.spy(function() { throw sentinels.two; });
+    spies[1] = sinon.spy(function() { throw sentinels.bar; });
     return assert.isRejected(concurrent.parallel(spies), sentinels.Sentinel)
         .then(function() {
           assert.notCalled(spies[2]);
@@ -241,7 +238,7 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
   it('rejects when a task returns a rejected promise', function() {
     var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
-      return Promise.rejected(sentinels.two);
+      return Promise.rejected(sentinels.bar);
     });
     return assert.isRejected(concurrent.parallel(spies), sentinels.Sentinel);
   });
