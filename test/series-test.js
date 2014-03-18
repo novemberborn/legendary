@@ -537,19 +537,19 @@ testCheckers(['some', 'someParallel'],
       it('returns `true` if an iterator returns a truthy value', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return item === sentinels.two; });
-        return assert.eventually.strictEqual(result, true);
+        return assert.eventually.isTrue(result);
       });
 
       it('returns `false` if no iterator returns a truthy value', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function() { return false; });
-        return assert.eventually.strictEqual(result, false);
+        return assert.eventually.isFalse(result);
       });
 
       it('handles the iterator returning a promise', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return Promise.from(item === sentinels.two); });
-        return assert.eventually.strictEqual(result, true);
+        return assert.eventually.isTrue(result);
       });
 
       if (method === 'some') {
@@ -559,7 +559,7 @@ testCheckers(['some', 'someParallel'],
                 return item === sentinels.two;
               });
               var result = callMethod(Series.from(sentinels.arr()), spy);
-              return assert.eventually.strictEqual(result, true)
+              return assert.eventually.isTrue(result)
                   .then(function() {
                     assert.calledTwice(spy);
                     assert.deepEqual(spy.firstCall.args, [sentinels.one]);
@@ -574,19 +574,19 @@ testCheckers(['every', 'everyParallel'],
       it('returns `true` if all iterators return a truthy value', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function() { return true; });
-        return assert.eventually.strictEqual(result, true);
+        return assert.eventually.isTrue(result);
       });
 
       it('returns `false` if an iterator returns a falsy value', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function(item) { return item !== sentinels.two; });
-        return assert.eventually.strictEqual(result, false);
+        return assert.eventually.isFalse(result);
       });
 
       it('handles the iterator returning a promise', function() {
         var result = callMethod(Series.from(sentinels.arr()),
             function() { return Promise.from(true); });
-        return assert.eventually.strictEqual(result, true);
+        return assert.eventually.isTrue(result);
       });
 
       if (method === 'every') {
@@ -596,7 +596,7 @@ testCheckers(['every', 'everyParallel'],
                 return item !== sentinels.two;
               });
               var result = callMethod(Series.from(sentinels.arr()), spy);
-              return assert.eventually.strictEqual(result, false)
+              return assert.eventually.isFalse(result)
                   .then(function() {
                     assert.calledTwice(spy);
                     assert.deepEqual(spy.firstCall.args, [sentinels.one]);
