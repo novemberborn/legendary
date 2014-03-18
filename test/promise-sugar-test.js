@@ -3,7 +3,7 @@
 var assert = require('chai').assert;
 var sinon = require('sinon');
 var clock = require('./clock');
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
@@ -31,7 +31,7 @@ function identity(x) { return x; }
 function resultsInCorrectSubclass(method) {
   var args = slice.call(arguments, 1);
   it('results in a correct instance when called on a subclass', function() {
-    var p = SubPromise.from(sentinels.one);
+    var p = SubPromise.from(sentinels.foo);
     assert.instanceOf(p[method].apply(p, args), SubPromise);
   });
 }
@@ -46,33 +46,33 @@ describe('Promise.join(...args)', function() {
   });
 
   it('resolves with joined value arguments', function() {
-    return assert.eventually.deepEqual(
-        Promise.join.apply(Promise, sentinels.arr()),
-        sentinels.arr());
+    var arr = sentinels.stubArray();
+    return assert.eventually.matchingSentinels(
+      Promise.join.apply(Promise, arr), arr);
   });
 
   it('resolves with joined promise arguments', function() {
-    var args = sentinels.arr(function(s) { return Promise.from(s); });
-    return assert.eventually.deepEqual(
-        Promise.join.apply(Promise, args),
-        sentinels.arr());
+    var arr = sentinels.stubArray();
+    return assert.eventually.matchingSentinels(
+      Promise.join.apply(Promise, arr.map(Promise.from)), arr);
   });
 
   it('resolves with joined mixed arguments', function() {
-    var args = sentinels.arr();
+    var arr = sentinels.stubArray();
+    var args = arr.slice();
     args[1] = Promise.from(args[1]);
-    return assert.eventually.deepEqual(
-        Promise.join.apply(Promise, args),
-        sentinels.arr());
+    return assert.eventually.matchingSentinels(
+      Promise.join.apply(Promise, args), arr);
   });
 
   it('rejects if any argument promise rejects', function() {
-    var args = sentinels.arr();
+    var arr = sentinels.stubArray();
+    var args = arr.slice();
     args[1] = Promise.rejected(args[1]);
     var result = Promise.join.apply(Promise, args);
     return assert.isRejected(result).then(function() {
       return result.then(null, function(reason) {
-        assert.strictEqual(reason, sentinels.two);
+        assert.matchingSentinels(reason, arr[1]);
       });
     });
   });
@@ -82,9 +82,9 @@ describe('Promise#yield(value)', function() {
   resultsInCorrectSubclass('yield');
 
   it('yields a promise fulfilled with `value`', function() {
-    return assert.eventually.strictEqual(
-        Promise.from(sentinels.one).yield(sentinels.two),
-        sentinels.two);
+    return assert.eventually.matchingSentinels(
+        Promise.from(sentinels.foo).yield(sentinels.bar),
+        sentinels.bar);
   });
 });
 
@@ -93,7 +93,7 @@ describe('Promise#yieldReason(reason)', function() {
 
   it('yields a promise rejected with `reason`', function() {
     return assert.isRejected(
-        Promise.from(null).yieldReason(sentinels.two),
+        Promise.from(null).yieldReason(sentinels.bar),
         sentinels.Sentinel);
   });
 });
@@ -103,16 +103,16 @@ describe('Promise#otherwise(onRejected)', function() {
 
   it('does not call `onRejected` for a fulfilled promise', function() {
     var spy = sinon.spy();
-    return Promise.from(sentinels.one).otherwise(spy).then(function() {
+    return Promise.from(sentinels.foo).otherwise(spy).then(function() {
       assert.notCalled(spy);
     });
   });
 
   it('calls `onRejected` for a rejected promise', function() {
     var spy = sinon.spy();
-    return Promise.rejected(sentinels.one).otherwise(spy).then(function() {
+    return Promise.rejected(sentinels.foo).otherwise(spy).then(function() {
       assert.calledOnce(spy);
-      assert.calledWithExactly(spy, sentinels.one);
+      assert.calledWithExactly(spy, sentinels.foo);
     });
   });
 });
@@ -122,21 +122,21 @@ describe('Promise#ensure(onFulfilledOrRejected)', function() {
 
   describe('returns a promise with the same state', function() {
     it('does so for a fulfilled promise', function() {
-      return assert.eventually.strictEqual(
-          Promise.from(sentinels.one).ensure(identity),
-          sentinels.one);
+      return assert.eventually.matchingSentinels(
+          Promise.from(sentinels.foo).ensure(identity),
+          sentinels.foo);
     });
 
     it('does so for a rejected promise', function() {
       return assert.isRejected(
-          Promise.rejected(sentinels.one).ensure(identity),
+          Promise.rejected(sentinels.foo).ensure(identity),
           sentinels.Sentinel);
     });
   });
 
   it('calls `onFulfilledOrRejected` for a fulfilled promise', function() {
     var spy = sinon.spy();
-    return Promise.from(sentinels.one).ensure(spy).then(function() {
+    return Promise.from(sentinels.foo).ensure(spy).then(function() {
       assert.calledOnce(spy);
       assert.lengthOf(spy.firstCall.args, 0);
     });
@@ -144,7 +144,7 @@ describe('Promise#ensure(onFulfilledOrRejected)', function() {
 
   it('is called for a rejected promise', function() {
     var spy = sinon.spy();
-    return assert.isRejected(Promise.rejected(sentinels.one).ensure(spy))
+    return assert.isRejected(Promise.rejected(sentinels.foo).ensure(spy))
         .then(function() {
           assert.calledOnce(spy);
           assert.lengthOf(spy.firstCall.args, 0);
@@ -158,30 +158,30 @@ describe('Promise#tap(onFulfilledSideEffect, onRejectedSideEffect)',
 
       describe('returns a promise with the same state', function() {
         it('does so for a fulfilled promise', function() {
-          return assert.eventually.strictEqual(
-              Promise.from(sentinels.one).tap(identity, identity),
-              sentinels.one);
+          return assert.eventually.matchingSentinels(
+              Promise.from(sentinels.foo).tap(identity, identity),
+              sentinels.foo);
         });
 
         it('does so for a rejected promise', function() {
           return assert.isRejected(
-              Promise.rejected(sentinels.one).tap(identity, identity),
+              Promise.rejected(sentinels.foo).tap(identity, identity),
               sentinels.Sentinel);
         });
       });
 
       it('calls `onFulfilledSideEffect` for a fulfilled promise', function() {
         var spy = sinon.spy();
-        return Promise.from(sentinels.one).tap(spy).then(function() {
+        return Promise.from(sentinels.foo).tap(spy).then(function() {
           assert.calledOnce(spy);
-          assert.calledWithExactly(spy, sentinels.one);
+          assert.calledWithExactly(spy, sentinels.foo);
         });
       });
 
       it('does not call `onFulfilledSideEffect` for a rejected promise',
           function() {
             var spy = sinon.spy();
-            var result = Promise.rejected(sentinels.one).tap(spy);
+            var result = Promise.rejected(sentinels.foo).tap(spy);
             return assert.isRejected(result).then(function() {
               assert.notCalled(spy);
             });
@@ -190,7 +190,7 @@ describe('Promise#tap(onFulfilledSideEffect, onRejectedSideEffect)',
       it('does not call `onRejectedSideEffect` for a fulfilled promise',
           function() {
             var spy = sinon.spy();
-            return Promise.from(sentinels.one).tap(null, spy)
+            return Promise.from(sentinels.foo).tap(null, spy)
                 .then(function() {
                   assert.notCalled(spy);
                 });
@@ -199,10 +199,10 @@ describe('Promise#tap(onFulfilledSideEffect, onRejectedSideEffect)',
       it('calls `onRejectedSideEffect` for a rejected promise',
           function() {
             var spy = sinon.spy();
-            var result = Promise.rejected(sentinels.one).tap(null, spy);
+            var result = Promise.rejected(sentinels.foo).tap(null, spy);
             return assert.isRejected(result).then(function() {
               assert.calledOnce(spy);
-              assert.calledWithExactly(spy, sentinels.one);
+              assert.calledWithExactly(spy, sentinels.foo);
             });
           });
     });
@@ -213,11 +213,12 @@ describe('Promise#spread(variadicOnFulfilled)', function() {
   it('applies `variadicOnFulfilled` with array as argument list',
       function() {
         var spy = sinon.spy();
-        return Promise.from(sentinels.arr()).spread(spy).then(function() {
+        var arr = sentinels.stubArray();
+        return Promise.from(arr).spread(spy).then(function() {
           assert.calledOnce(spy);
           assert.calledOn(spy, undefined);
           assert.calledWithExactly.apply(assert,
-              [spy].concat(sentinels.arr()));
+              [spy].concat(arr));
         });
       });
 
@@ -225,17 +226,17 @@ describe('Promise#spread(variadicOnFulfilled)', function() {
       'argument list',
       function() {
         var spy = sinon.spy();
-        var arr = sentinels.arr(function(s) { return Promise.from(s); });
-        return Promise.from(arr).spread(spy).then(function() {
+        var arr = sentinels.stubArray();
+        return Promise.from(arr.map(Promise.from)).spread(spy).then(function() {
           assert.calledOnce(spy);
           assert.calledOn(spy, undefined);
-          assert.calledWithExactly.apply(assert, [spy].concat(sentinels.arr()));
+          assert.calledWithExactly.apply(assert, [spy].concat(arr));
         });
       });
 
   it('rejects if any item in the array rejects', function() {
     var spy = sinon.spy();
-    var result = Promise.from([Promise.rejected(sentinels.one)]).spread(spy);
+    var result = Promise.from([Promise.rejected(sentinels.foo)]).spread(spy);
     return assert.isRejected(result, sentinels.Sentinel).then(function() {
       assert.notCalled(spy);
     });
@@ -264,31 +265,31 @@ describe('Promise#spread(variadicOnFulfilled)', function() {
 
 describe('Promise#nodeify(callback)', function() {
   it('is a noop when called without a callback function', function() {
-    var p = Promise.from(sentinels.one);
+    var p = Promise.from(sentinels.foo);
     assert.strictEqual(p.nodeify(), p);
   });
 
   it('returns undefined when called with a callback function', function() {
-    assert.isUndefined(Promise.from(sentinels.one).nodeify(identity));
+    assert.isUndefined(Promise.from(sentinels.foo).nodeify(identity));
   });
 
   it('eventually invokes the callback with the fulfilled value', function() {
     var spy = sinon.spy();
-    var p = Promise.from(sentinels.one);
+    var p = Promise.from(sentinels.foo);
     p.nodeify(spy);
     return p.then(function() {
       assert.calledOnce(spy);
-      assert.calledWithExactly(spy, null, sentinels.one);
+      assert.calledWithExactly(spy, null, sentinels.foo);
     });
   });
 
   it('eventually invokes the callback with the rejected value', function() {
     var spy = sinon.spy();
-    var p = Promise.rejected(sentinels.one);
+    var p = Promise.rejected(sentinels.foo);
     p.nodeify(spy);
     return p.then(null, function() {
       assert.calledOnce(spy);
-      assert.calledWithExactly(spy, sentinels.one);
+      assert.calledWithExactly(spy, sentinels.foo);
     });
   });
 });
@@ -297,7 +298,7 @@ describe('Promise#cancelAfter(milliseconds)', function() {
   clock.use();
 
   it('returns the same promise', function() {
-    var p = Promise.from(sentinels.one);
+    var p = Promise.from(sentinels.foo);
     assert.strictEqual(p.cancelAfter(1), p);
   });
 
@@ -379,18 +380,18 @@ describe('Promise#send(methodName, ...args)', function() {
       function() {
         var obj = {
           spy: sinon.spy(function() {
-            return sentinels.three;
+            return sentinels.baz;
           })
         };
 
         var result = Promise.from(obj).send('spy',
-            sentinels.one, sentinels.two);
+            sentinels.foo, sentinels.bar);
 
-        return assert.eventually.strictEqual(result, sentinels.three)
+        return assert.eventually.matchingSentinels(result, sentinels.baz)
             .then(function() {
               assert.calledOnce(obj.spy);
               assert.calledOn(obj.spy, obj);
-              assert.calledWithExactly(obj.spy, sentinels.one, sentinels.two);
+              assert.calledWithExactly(obj.spy, sentinels.foo, sentinels.bar);
             });
       });
 });
@@ -400,8 +401,8 @@ describe('Promise#prop(name)', function() {
 
   it('returns the property named `name` from the eventual promise value',
       function() {
-        return assert.eventually.strictEqual(
-            Promise.from({ foo: sentinels.one }).prop('foo'),
-            sentinels.one);
+        return assert.eventually.matchingSentinels(
+            Promise.from({ foo: sentinels.foo }).prop('foo'),
+            sentinels.foo);
       });
 });

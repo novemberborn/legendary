@@ -2,7 +2,7 @@
 
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
 var fn = require('../').fn;
@@ -32,15 +32,15 @@ function identity(x) { return x; }
 
     it('preserves thisArg', function() {
       var spy = sinon.spy();
-      return callMethod(spy, [], sentinels.one).then(function() {
-        assert.calledOn(spy, sentinels.one);
+      return callMethod(spy, [], sentinels.foo).then(function() {
+        assert.calledOn(spy, sentinels.foo);
       });
     });
 
     it('accepts values for arguments', function() {
       var spy = sinon.spy();
-      return callMethod(spy, [sentinels.one, sentinels.two]).then(function() {
-        assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+      return callMethod(spy, [sentinels.foo, sentinels.bar]).then(function() {
+        assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
       });
     });
 
@@ -49,11 +49,11 @@ function identity(x) { return x; }
       return callMethod(
         spy,
         [
-          Promise.from(sentinels.one),
-          Promise.from(sentinels.two)
+          Promise.from(sentinels.foo),
+          Promise.from(sentinels.bar)
         ]
       ).then(function() {
-          assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+          assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
         });
     });
 
@@ -66,20 +66,20 @@ function identity(x) { return x; }
 
     it('rejects when the function throws', function() {
       return assert.isRejected(callMethod(function() {
-        throw sentinels.one;
+        throw sentinels.foo;
       }), sentinels.Sentinel);
     });
 
     it('rejects when the function returns a rejected promise', function() {
       return assert.isRejected(callMethod(function() {
-        return Promise.rejected(sentinels.one);
+        return Promise.rejected(sentinels.foo);
       }), sentinels.Sentinel);
     });
 
     it('resolves with the function’s return value', function() {
-      return assert.eventually.strictEqual(callMethod(function() {
-        return sentinels.one;
-      }), sentinels.one);
+      return assert.eventually.matchingSentinels(callMethod(function() {
+        return sentinels.foo;
+      }), sentinels.foo);
     });
   });
 });
@@ -96,59 +96,59 @@ describe('fn.lift(normalFunction)', function() {
 
     it('preserves thisArg', function() {
       var spy = sinon.spy();
-      return fn.lift(spy).call(sentinels.one).then(function() {
-        assert.calledOn(spy, sentinels.one);
+      return fn.lift(spy).call(sentinels.foo).then(function() {
+        assert.calledOn(spy, sentinels.foo);
       });
     });
 
     it('accepts values for arguments', function() {
       var spy = sinon.spy();
-      return fn.lift(spy)(sentinels.one, sentinels.two).then(function() {
-        assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+      return fn.lift(spy)(sentinels.foo, sentinels.bar).then(function() {
+        assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
       });
     });
 
     it('accepts promises for arguments', function() {
       var spy = sinon.spy();
       return fn.lift(spy)(
-        Promise.from(sentinels.one),
-        Promise.from(sentinels.two)
+        Promise.from(sentinels.foo),
+        Promise.from(sentinels.bar)
       ).then(function() {
-        assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+        assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
       });
     });
 
     it('rejects when the function throws', function() {
       return assert.isRejected(fn.lift(function() {
-        throw sentinels.one;
+        throw sentinels.foo;
       })(), sentinels.Sentinel);
     });
 
     it('rejects when the function returns a rejected promise', function() {
       return assert.isRejected(fn.lift(function() {
-        return Promise.rejected(sentinels.one);
+        return Promise.rejected(sentinels.foo);
       })(), sentinels.Sentinel);
     });
 
     it('resolves with the function’s return value', function() {
-      return assert.eventually.strictEqual(fn.lift(function() {
-        return sentinels.one;
-      })(), sentinels.one);
+      return assert.eventually.matchingSentinels(fn.lift(function() {
+        return sentinels.foo;
+      })(), sentinels.foo);
     });
   });
 
   it('accepts leading arguments', function() {
     var spy = sinon.spy();
-    return fn.lift(spy, sentinels.one)(sentinels.two).then(function() {
-      assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+    return fn.lift(spy, sentinels.foo)(sentinels.bar).then(function() {
+      assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
     });
   });
 
   it('accepts promises as leading arguments', function() {
     var spy = sinon.spy();
-    return fn.lift(spy, Promise.from(sentinels.one))(sentinels.two)
+    return fn.lift(spy, Promise.from(sentinels.foo))(sentinels.bar)
         .then(function() {
-          assert.calledWithExactly(spy, sentinels.one, sentinels.two);
+          assert.calledWithExactly(spy, sentinels.foo, sentinels.bar);
         });
   });
 });
@@ -166,8 +166,8 @@ describe('fn.compose()', function() {
     it('relies on concurrent.pipeline', function() {
       var pipelineSpy = sinon.spy(concurrent, 'pipeline');
       var composed = fn.compose(identity, identity);
-      var sentinelPromise = Promise.from(sentinels.three);
-      composed.call(sentinels.one, sentinels.two, sentinelPromise);
+      var sentinelPromise = Promise.from(sentinels.baz);
+      composed.call(sentinels.foo, sentinels.bar, sentinelPromise);
 
       assert.calledOnce(pipelineSpy);
 
@@ -178,7 +178,7 @@ describe('fn.compose()', function() {
       assert.isFunction(args[0][0]);
       assert.isFunction(args[0][1]);
 
-      assert.strictEqual(args[1], sentinels.two);
+      assert.matchingSentinels(args[1], sentinels.bar);
       assert.strictEqual(args[2], sentinelPromise);
     });
 
@@ -187,18 +187,18 @@ describe('fn.compose()', function() {
         function() {
           var compositionSpy = sinon.spy(identity);
           var composed = fn.compose(compositionSpy, compositionSpy);
-          var sentinelPromise = Promise.from(sentinels.three);
+          var sentinelPromise = Promise.from(sentinels.baz);
           var result = composed.call(
-              sentinels.one, sentinels.two, sentinelPromise);
+              sentinels.foo, sentinels.bar, sentinelPromise);
 
-          return assert.eventually.strictEqual(result, sentinels.two)
+          return assert.eventually.matchingSentinels(result, sentinels.bar)
               .then(function() {
                 assert.calledTwice(compositionSpy);
-                assert.alwaysCalledOn(compositionSpy, sentinels.one);
-                assert.deepEqual(compositionSpy.firstCall.args,
-                    [sentinels.two, sentinels.three]);
-                assert.deepEqual(compositionSpy.secondCall.args,
-                    [sentinels.two]);
+                assert.alwaysCalledOn(compositionSpy, sentinels.foo);
+                assert.matchingSentinels(compositionSpy.firstCall.args,
+                    [sentinels.bar, sentinels.baz]);
+                assert.matchingSentinels(compositionSpy.secondCall.args,
+                    [sentinels.bar]);
               });
         });
 
@@ -206,18 +206,18 @@ describe('fn.compose()', function() {
       var composed = fn.compose(
         function() {
           return {
-            then: function(resolve) { resolve(sentinels.one); }
+            then: function(resolve) { resolve(sentinels.foo); }
           };
         },
         function(prevResult) {
-          assert.strictEqual(prevResult, sentinels.one);
+          assert.strictEqual(prevResult, sentinels.foo);
           return {
-            then: function(resolve) { resolve(sentinels.two); }
+            then: function(resolve) { resolve(sentinels.bar); }
           };
         }
       );
 
-      return assert.eventually.strictEqual(composed(), sentinels.two);
+      return assert.eventually.matchingSentinels(composed(), sentinels.bar);
     });
   });
 });

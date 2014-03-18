@@ -25,7 +25,8 @@
     "sinon": "^1.9.0",
     "grock": "^0.3.1",
     "jshint-stylish": "^0.1.5",
-    "jshint": "^2.4.4"
+    "jshint": "^2.4.4",
+    "chai-sentinels": "^1.0.0"
   },
   "scripts": {
     "test": "test/runner.js",

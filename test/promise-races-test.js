@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('chai').assert;
-var sentinels = require('./sentinels');
+var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
 
@@ -36,39 +36,41 @@ describe('Promise.all(input)', function() {
     });
 
     it('resolves for a values array', function() {
-      var arr = sentinels.arr();
-      return assert.eventually.deepEqual(Promise.all(arr), arr);
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(Promise.all(arr), arr);
     });
 
     it('resolves with a different array instance', function() {
-      var arr = sentinels.arr();
+      var arr = sentinels.stubArray();
       return assert.eventually.notStrictEqual(Promise.all(arr), arr);
     });
 
     it('resolves for a promises array', function() {
-      var arr = sentinels.arr(function(s) { return Promise.from(s); });
-      return assert.eventually.deepEqual(Promise.all(arr), sentinels.arr());
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(
+        Promise.all(arr.map(Promise.from)), arr);
     });
 
     it('resolves for a sparse array', function() {
       var arr = [];
-      arr[0] = sentinels.one;
-      arr[2] = sentinels.two;
-      return assert.eventually.deepEqual(Promise.all(arr), arr);
+      arr[0] = sentinels.foo;
+      arr[2] = sentinels.bar;
+      return assert.eventually.matchingSentinels(Promise.all(arr), arr);
     });
 
     it('rejects if any promise rejects', function() {
       var arr = [
         1,
-        Promise.rejected(sentinels.two),
+        Promise.rejected(sentinels.bar),
         3
       ];
       return assert.isRejected(Promise.all(arr), sentinels.Sentinel);
     });
 
     it('accepts a promise for an array', function() {
-      var arr = sentinels.arr();
-      return assert.eventually.deepEqual(Promise.all(Promise.from(arr)), arr);
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(
+        Promise.all(Promise.from(arr)), arr);
     });
   });
 
@@ -78,32 +80,39 @@ describe('Promise.all(input)', function() {
     });
 
     it('resolves for a values object', function() {
-      var obj = sentinels.obj();
-      return assert.eventually.deepEqual(Promise.all(obj), obj);
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(Promise.all(obj), obj);
     });
 
     it('resolves with a different object instance', function() {
-      var obj = sentinels.obj();
+      var obj = sentinels.stubObject();
       return assert.eventually.notStrictEqual(Promise.all(obj), obj);
     });
 
     it('resolves for a promises object', function() {
-      var obj = sentinels.obj(function(s) { return Promise.from(s); });
-      return assert.eventually.deepEqual(Promise.all(obj), sentinels.obj());
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.all({
+          foo: Promise.from(obj.foo),
+          bar: Promise.from(obj.bar),
+          baz: Promise.from(obj.baz)
+        }),
+        obj);
     });
 
     it('rejects if any promise rejects', function() {
       var obj = {
         one: 1,
-        two: Promise.rejected(sentinels.two),
+        two: Promise.rejected(sentinels.bar),
         three: 3
       };
       return assert.isRejected(Promise.all(obj), sentinels.Sentinel);
     });
 
     it('accepts a promise for an object', function() {
-      var obj = sentinels.obj();
-      return assert.eventually.deepEqual(Promise.all(Promise.from(obj)), obj);
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.all(Promise.from(obj)), obj);
     });
   });
 });
@@ -123,43 +132,45 @@ describe('Promise.any(input)', function() {
     });
 
     it('resolves for a values array', function() {
-      var arr = sentinels.arr();
-      return Promise.any(arr).then(function(result) {
-        assert.include(arr, result);
-      });
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(Promise.any(arr), arr[0]);
     });
 
     it('resolves for a promises array', function() {
-      var arr = [new Promise(function() {}), Promise.from(sentinels.two)];
-      return assert.eventually.strictEqual(Promise.any(arr), sentinels.two);
+      var arr = [new Promise(function() {}), Promise.from(sentinels.bar)];
+      return assert.eventually.matchingSentinels(
+        Promise.any(arr), sentinels.bar);
     });
 
     it('resolves for a sparse array', function() {
       var arr = [];
-      arr[1] = sentinels.two;
-      return assert.eventually.strictEqual(Promise.any(arr), sentinels.two);
+      arr[1] = sentinels.bar;
+      return assert.eventually.matchingSentinels(
+        Promise.any(arr), sentinels.bar);
     });
 
     it('resolves even if a promise rejects', function() {
-      var arr = [Promise.rejected(sentinels.one), Promise.from(sentinels.two)];
-      return assert.eventually.strictEqual(Promise.any(arr), sentinels.two);
+      var arr = [Promise.rejected(sentinels.foo), Promise.from(sentinels.bar)];
+      return assert.eventually.matchingSentinels(
+        Promise.any(arr), sentinels.bar);
     });
 
     it('rejects if all promises reject', function() {
-      var arr = sentinels.arr(function(s) { return Promise.rejected(s); });
-      var result = Promise.any(arr);
+      var arr = sentinels.stubArray();
+      var result = Promise.any(arr.map(function(s) {
+        return Promise.rejected(s);
+      }));
       return assert.isRejected(result).then(function() {
         return result.then(null, function(reasons) {
-          assert.deepEqual(reasons, sentinels.arr());
+          assert.matchingSentinels(reasons, arr);
         });
       });
     });
 
     it('accepts a promise for an array', function() {
-      var arr = sentinels.arr();
-      return Promise.any(Promise.from(arr)).then(function(result) {
-        assert.include(arr, result);
-      });
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(
+        Promise.any(Promise.from(arr)), arr[0]);
     });
   });
 
@@ -169,49 +180,47 @@ describe('Promise.any(input)', function() {
     });
 
     it('resolves for a values object', function() {
-      var obj = sentinels.obj();
-      var values = Object.keys(obj).map(function(key) {
-        return obj[key];
-      });
-      return Promise.any(obj).then(function(result) {
-        assert.include(values, result);
-      });
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.any(obj), obj.foo);
     });
 
     it('resolves for a promises object', function() {
       var obj = {
         one: new Promise(function() {}),
-        two: Promise.from(sentinels.two)
+        two: Promise.from(sentinels.bar)
       };
-      return assert.eventually.strictEqual(Promise.any(obj), sentinels.two);
+      return assert.eventually.matchingSentinels(
+        Promise.any(obj), sentinels.bar);
     });
 
     it('resolves even if a promise rejects', function() {
       var obj = {
-        one: Promise.rejected(sentinels.one),
-        two: Promise.from(sentinels.two)
+        one: Promise.rejected(sentinels.foo),
+        two: Promise.from(sentinels.bar)
       };
-      return assert.eventually.strictEqual(Promise.any(obj), sentinels.two);
+      return assert.eventually.matchingSentinels(
+        Promise.any(obj), sentinels.bar);
     });
 
     it('rejects if all promises reject', function() {
-      var obj = sentinels.obj(function(s) { return Promise.rejected(s); });
-      var result = Promise.any(obj);
+      var obj = sentinels.stubObject();
+      var result = Promise.any({
+        foo: Promise.rejected(obj.foo),
+        bar: Promise.rejected(obj.bar),
+        baz: Promise.rejected(obj.baz)
+      });
       return assert.isRejected(result).then(function() {
         return result.then(null, function(reasons) {
-          assert.deepEqual(reasons, sentinels.obj());
+          assert.matchingSentinels(reasons, obj);
         });
       });
     });
 
     it('accepts a promise for an object', function() {
-      var obj = sentinels.obj();
-      var values = Object.keys(obj).map(function(key) {
-        return obj[key];
-      });
-      return Promise.any(Promise.from(obj)).then(function(result) {
-        assert.include(values, result);
-      });
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.any(Promise.from(obj)), obj.foo);
     });
   });
 });
@@ -231,121 +240,112 @@ describe('Promise.some(input, winsRequired)', function() {
     });
 
     it('resolves for a values array', function() {
-      var arr = sentinels.arr();
-      return Promise.some(arr, 2).then(function(result) {
-        assert.includeMembers(arr, result);
-      });
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(
+        Promise.some(arr, 2), arr.slice(0, 2));
     });
 
     it('resolves for a promises array', function() {
       var arr = [
         new Promise(function() {}),
-        Promise.from(sentinels.two),
-        Promise.from(sentinels.three)
+        Promise.from(sentinels.bar),
+        Promise.from(sentinels.baz)
       ];
-      return assert.eventually.deepEqual(Promise.some(arr, 2),
-          [sentinels.two, sentinels.three]);
+      return assert.eventually.matchingSentinels(
+        Promise.some(arr, 2), [sentinels.bar, sentinels.baz]);
     });
 
     it('resolves for a sparse array', function() {
       var arr = [];
-      arr[1] = sentinels.two;
-      arr[3] = sentinels.three;
-      return assert.eventually.deepEqual(Promise.some(arr, 2),
-          [sentinels.two, sentinels.three]);
+      arr[1] = sentinels.bar;
+      arr[3] = sentinels.baz;
+      return assert.eventually.matchingSentinels(
+        Promise.some(arr, 2), [sentinels.bar, sentinels.baz]);
     });
 
     it('resolves even if a promise rejects', function() {
       var arr = [
-        Promise.rejected(sentinels.one),
-        Promise.from(sentinels.two),
-        sentinels.three
+        Promise.rejected(sentinels.foo),
+        Promise.from(sentinels.bar),
+        sentinels.baz
       ];
-      return assert.eventually.deepEqual(Promise.some(arr, 2),
-          [sentinels.two, sentinels.three]);
+      return assert.eventually.matchingSentinels(
+        Promise.some(arr, 2), [sentinels.bar, sentinels.baz]);
     });
 
     it('rejects if too many promises reject', function() {
       var arr = [
-        Promise.rejected(sentinels.one),
-        Promise.rejected(sentinels.two),
-        sentinels.three
+        Promise.rejected(sentinels.foo),
+        Promise.rejected(sentinels.bar),
+        sentinels.baz
       ];
       var result = Promise.some(arr, 2);
       return assert.isRejected(result).then(function() {
         return result.then(null, function(reasons) {
-          assert.deepEqual(reasons, [sentinels.one, sentinels.two]);
+          assert.matchingSentinels(reasons, [sentinels.foo, sentinels.bar]);
         });
       });
     });
 
     it('accepts a promise for an array', function() {
-      var arr = sentinels.arr();
-      return Promise.some(Promise.from(arr), 2).then(function(result) {
-        assert.includeMembers(arr, result);
-      });
+      var arr = sentinels.stubArray();
+      return assert.eventually.matchingSentinels(
+        Promise.some(Promise.from(arr), 2), arr.slice(0, 2));
     });
   });
 
   describe('for object inputs', function() {
-    function assertProperSubset(value, superset) {
-      assert.includeMembers(Object.keys(superset), Object.keys(value));
-      Object.keys(value).forEach(function(key) {
-        assert.strictEqual(value[key], superset[key]);
-      });
-    }
-
     it('resolves to undefined for an empty object', function() {
       return assert.eventually.isUndefined(Promise.some({}, 1));
     });
 
     it('resolves for a values object', function() {
-      var obj = sentinels.obj();
-      return Promise.some(obj, 2).then(function(result) {
-        assertProperSubset(result, obj);
-      });
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.some(obj, 2), { foo: obj.foo, bar: obj.bar });
     });
 
     it('resolves for a promises object', function() {
       var obj = {
         one: new Promise(function() {}),
-        two: Promise.from(sentinels.two),
-        three: Promise.from(sentinels.three)
+        two: Promise.from(sentinels.bar),
+        three: Promise.from(sentinels.baz)
       };
-      return assert.eventually.deepEqual(Promise.some(obj, 2),
-          { two: sentinels.two, three: sentinels.three });
+      return assert.eventually.matchingSentinels(
+          Promise.some(obj, 2), { two: sentinels.bar, three: sentinels.baz });
     });
 
     it('resolves even if a promise rejects', function() {
       var obj = {
-        one: Promise.rejected(sentinels.one),
-        two: Promise.from(sentinels.two),
-        three: sentinels.three
+        one: Promise.rejected(sentinels.foo),
+        two: Promise.from(sentinels.bar),
+        three: sentinels.baz
       };
-      return assert.eventually.deepEqual(Promise.some(obj, 2),
-          { two: sentinels.two, three: sentinels.three });
+      return assert.eventually.matchingSentinels(
+        Promise.some(obj, 2), { two: sentinels.bar, three: sentinels.baz });
     });
 
     it('rejects if too many promises reject', function() {
       var obj = {
-        one: Promise.rejected(sentinels.one),
-        two: Promise.rejected(sentinels.two),
-        three: sentinels.three
+        one: Promise.rejected(sentinels.foo),
+        two: Promise.rejected(sentinels.bar),
+        three: sentinels.baz
       };
       var result = Promise.some(obj, 2);
       return assert.isRejected(result).then(function() {
         return result.then(null, function(reasons) {
-          assert.deepEqual(reasons,
-              { one: sentinels.one, two: sentinels.two });
+          assert.matchingSentinels(reasons, {
+            one: sentinels.foo,
+            two: sentinels.bar
+          });
         });
       });
     });
 
     it('accepts a promise for an object', function() {
-      var obj = sentinels.obj();
-      return Promise.some(Promise.from(obj), 2).then(function(result) {
-        assertProperSubset(result, obj);
-      });
+      var obj = sentinels.stubObject();
+      return assert.eventually.matchingSentinels(
+        Promise.some(Promise.from(obj), 2), { foo: obj.foo, bar: obj.bar });
     });
   });
 });
