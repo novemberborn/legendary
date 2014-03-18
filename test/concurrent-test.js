@@ -8,13 +8,21 @@ var Promise = require('../').Promise;
 var Series = require('../').Series;
 var concurrent = require('../').concurrent;
 
+function thrice(callback) {
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result.push(callback());
+  }
+  return result;
+}
+
 describe('concurrent.sequence(arrayOfTasks)', function() {
   it('returns a Series instance', function() {
     assert.instanceOf(concurrent.sequence([]), Series);
   });
 
   it('executes tasks in order', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     return concurrent.sequence(spies).then(function() {
       assert.callOrder.apply(assert, spies);
     });
@@ -22,7 +30,7 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
 
   it('executes one task at a time', function() {
     var started = 0, finished = 0;
-    var tasks = sentinels.arr(function() {
+    var tasks = thrice(function() {
       return function() {
         started++;
         return new Promise(function(resolve) {
@@ -71,7 +79,7 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
   });
 
   it('rejects when a task throws', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() { throw sentinels.two; });
     return assert.isRejected(concurrent.sequence(spies), sentinels.Sentinel)
         .then(function() {
@@ -80,7 +88,7 @@ describe('concurrent.sequence(arrayOfTasks)', function() {
   });
 
   it('rejects when a task returns a rejected promise', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
       return Promise.rejected(sentinels.two);
     });
@@ -97,7 +105,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
   });
 
   it('executes tasks in order', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     return concurrent.pipeline(spies).then(function() {
       assert.callOrder.apply(assert, spies);
     });
@@ -115,7 +123,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
       });
 
   it('passes arguments to initial task', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     return concurrent.pipeline(spies, sentinels.one, sentinels.two)
         .then(function() {
           assert.calledWithExactly(spies[0], sentinels.one, sentinels.two);
@@ -147,7 +155,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
   });
 
   it('rejects when a task throws', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() { throw sentinels.two; });
     return assert.isRejected(concurrent.pipeline(spies), sentinels.Sentinel)
         .then(function() {
@@ -156,7 +164,7 @@ describe('concurrent.pipeline(arrayOfTasks)', function() {
   });
 
   it('rejects when a task returns a rejected promise', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
       return Promise.rejected(sentinels.two);
     });
@@ -174,7 +182,7 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
 
   it('executes all tasks in parallel', function() {
     var started = 0;
-    var tasks = sentinels.arr(function() {
+    var tasks = thrice(function() {
       return function() {
         started++;
         return new Promise(function(resolve) {
@@ -222,7 +230,7 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
   });
 
   it('rejects when a task throws', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() { throw sentinels.two; });
     return assert.isRejected(concurrent.parallel(spies), sentinels.Sentinel)
         .then(function() {
@@ -231,7 +239,7 @@ describe('concurrent.parallel(arrayOfTasks)', function() {
   });
 
   it('rejects when a task returns a rejected promise', function() {
-    var spies = sentinels.arr(function() { return sinon.spy(); });
+    var spies = thrice(sinon.spy);
     spies[1] = sinon.spy(function() {
       return Promise.rejected(sentinels.two);
     });
