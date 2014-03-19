@@ -3,7 +3,6 @@
 var assert = require('chai').assert;
 var sinon = require('sinon');
 var sentinels = require('chai-sentinels');
-var util = require('./util');
 
 var Promise = require('../').Promise;
 var Series = require('../').Series;
@@ -87,7 +86,9 @@ function usesMapParallel(callMethod, maxConcurrent) {
 }
 
 describe('Series', function() {
-  util.testConstructor(Series);
+  it('is a Promise constructor', function() {
+    assert.isPromiseConstructor(Series);
+  });
 });
 
 describe('Series#mapParallel()', function() {
