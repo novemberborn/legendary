@@ -1,8 +1,6 @@
 'use strict';
 
-var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('chai-sentinels');
 
 var util = require('../lib/private/util');
 var Promise = require('../').Promise;

@@ -1,11 +1,10 @@
 'use strict';
 
-var assert = require('chai').assert;
+var expect = require('chai').expect;
 
 var Promise = require('../').Promise;
 var blessObject = require('../').blessObject;
 var extendConstructor = require('../').extendConstructor;
-var expect = require('chai').expect;
 
 describe('Assertion extensions:', function() {
   describe('.to.not.be.a.promiseConstructor', function() {

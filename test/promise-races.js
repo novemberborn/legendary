@@ -1,8 +1,5 @@
 'use strict';
 
-var assert = require('chai').assert;
-var sentinels = require('chai-sentinels');
-
 var Promise = require('../').Promise;
 var blessObject = require('../').blessObject;
 var extendConstructor = require('../').extendConstructor;
