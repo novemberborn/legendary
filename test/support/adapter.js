@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('../').Promise;
+var Promise = require('../../').Promise;
 
 exports.deferred = function() {
   var deferred = {};
