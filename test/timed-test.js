@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('chai').assert;
-var clock = require('./clock');
+var sinon = require('sinon');
 var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
@@ -24,7 +24,13 @@ function assertFulfilled(p, value) {
 }
 
 describe('timed.delay(milliseconds, x)', function() {
-  clock.use();
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('returns a Promise instance', function() {
     assert.instanceOf(timed.delay(0), Promise);
@@ -43,7 +49,7 @@ describe('timed.delay(milliseconds, x)', function() {
     var delayed = timed.delay();
     process.nextTick(function() {
       assertPending(delayed);
-      clock.immediate();
+      clock.tick();
       assertFulfilled(delayed);
     });
   });
@@ -120,7 +126,13 @@ describe('timed.delay(milliseconds, x)', function() {
 });
 
 describe('timed.timeout(milliseconds, x)', function() {
-  clock.use();
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('returns a Promise instance', function() {
     assert.instanceOf(timed.timeout(0), Promise);
@@ -140,7 +152,7 @@ describe('timed.timeout(milliseconds, x)', function() {
 
   it('rejects "immediately" with a falsy timeout', function() {
     var p = timed.timeout(0, new Promise(function() {}));
-    clock.immediate();
+    clock.tick();
     return assert.isRejected(p, TimeoutError);
   });
 

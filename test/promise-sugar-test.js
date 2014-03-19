@@ -2,7 +2,6 @@
 
 var assert = require('chai').assert;
 var sinon = require('sinon');
-var clock = require('./clock');
 var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
@@ -295,7 +294,13 @@ describe('Promise#nodeify(callback)', function() {
 });
 
 describe('Promise#cancelAfter(milliseconds)', function() {
-  clock.use();
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('returns the same promise', function() {
     var p = Promise.from(sentinels.foo);
