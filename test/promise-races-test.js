@@ -4,8 +4,9 @@ var assert = require('chai').assert;
 var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
+var blessObject = require('../').blessObject;
+var extendConstructor = require('../').extendConstructor;
 
-var main = require('../');
 function SubPromise(executor) {
   if (typeof executor !== 'function') {
     throw new TypeError();
@@ -15,11 +16,11 @@ function SubPromise(executor) {
     return new SubPromise(executor);
   }
 
-  if (executor !== main.blessObject) {
-    main.blessObject(this, executor, true);
+  if (executor !== blessObject) {
+    blessObject(this, executor, true);
   }
 }
-main.extendConstructor(SubPromise, Promise);
+extendConstructor(SubPromise, Promise);
 
 describe('Promise.all(input)', function() {
   it('returns a promise of the same subclass', function() {
