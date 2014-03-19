@@ -84,17 +84,17 @@ callbacks are invoked when this number reaches the maximum concurrency.</p>
         </div>
       
       
-        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Series</span><span class="hljs-params">(resolver)</span> {</span>
-  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> resolver !== <span class="hljs-string">'function'</span>) {
+        <div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Series</span><span class="hljs-params">(executor)</span> {</span>
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> executor !== <span class="hljs-string">'function'</span>) {
     <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>();
   }
 
   <span class="hljs-keyword">if</span> (!(<span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> Series)) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Series(resolver);
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Series(executor);
   }
 
-  <span class="hljs-keyword">if</span> (resolver !== blessed.be) {
-    blessed.be(<span class="hljs-keyword">this</span>, resolver, <span class="hljs-literal">true</span>);
+  <span class="hljs-keyword">if</span> (executor !== blessed.be) {
+    blessed.be(<span class="hljs-keyword">this</span>, executor, <span class="hljs-literal">true</span>);
   }
 }
 </div></div>

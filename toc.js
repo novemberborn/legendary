@@ -83,8 +83,8 @@ window.files = [
     },
     {
       "level": 2,
-      "slug": "blessobject-object-resolver-cancellable-propagationconstructor-",
-      "title": "blessObject(object, resolver, cancellable, propagationConstructor)"
+      "slug": "blessobject-object-executor-cancellable-propagationconstructor-",
+      "title": "blessObject(object, executor, cancellable, propagationConstructor)"
     },
     {
       "level": 2,
