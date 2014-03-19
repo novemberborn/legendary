@@ -22,7 +22,7 @@
     "mocha": "^1.18.2",
     "promises-aplus-tests": "^2.0.4",
     "sinon": "^1.9.0",
-    "grock": "^0.3.1",
+    "grock": "^0.3.2",
     "jshint-stylish": "^0.1.5",
     "jshint": "^2.4.4",
     "chai-sentinels": "^1.0.0"
