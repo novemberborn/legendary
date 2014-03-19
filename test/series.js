@@ -1,16 +1,14 @@
 'use strict';
 
-var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('chai-sentinels');
-var util = require('./util');
 
 var Promise = require('../').Promise;
 var Series = require('../').Series;
 var CancellationError = require('../').CancellationError;
 var delay = require('../').timed.delay;
+var blessObject = require('../').blessObject;
+var extendConstructor = require('../').extendConstructor;
 
-var main = require('../');
 function SubSeries(executor) {
   if (typeof executor !== 'function') {
     throw new TypeError();
@@ -20,11 +18,11 @@ function SubSeries(executor) {
     return new SubSeries(executor);
   }
 
-  if (executor !== main.blessObject) {
-    main.blessObject(this, executor, true);
+  if (executor !== blessObject) {
+    blessObject(this, executor, true);
   }
 }
-main.extendConstructor(SubSeries, Series);
+extendConstructor(SubSeries, Series);
 
 function identity(x) { return x; }
 function thrower(x) { throw x; }
@@ -87,7 +85,9 @@ function usesMapParallel(callMethod, maxConcurrent) {
 }
 
 describe('Series', function() {
-  util.testConstructor(Series);
+  it('is a Promise constructor', function() {
+    assert.isPromiseConstructor(Series);
+  });
 });
 
 describe('Series#mapParallel()', function() {

@@ -1,8 +1,8 @@
 'use strict';
 
-var assert = require('chai').assert;
 var sinon = require('sinon');
-var sentinels = require('chai-sentinels');
+
+var Thenable = require('./support/Thenable');
 
 var Promise = require('../').Promise;
 
@@ -12,7 +12,7 @@ describe('Promise.isInstance(value)', function() {
   });
 
   it('returns false for non-Promise instances', function() {
-    assert.isFalse(Promise.isInstance({ then: function() {} }));
+    assert.isFalse(Promise.isInstance(Thenable.defer().it));
   });
 });
 
@@ -37,11 +37,9 @@ describe('Promise.from(value)', function() {
 
   it('returns a new promise adopting the state of the thenable `value`',
       function() {
-        var promise = Promise.from({
-          then: function(resolve) {
-            resolve(sentinels.foo);
-          }
-        });
+        var promise = Promise.from(new Thenable(function(resolve) {
+          resolve(sentinels.foo);
+        }));
         return assert.eventually.matchingSentinels(promise, sentinels.foo);
       });
 });

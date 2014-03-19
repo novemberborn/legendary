@@ -1,14 +1,12 @@
 'use strict';
 
-var assert = require('chai').assert;
 var sinon = require('sinon');
-var clock = require('./clock');
-var sentinels = require('chai-sentinels');
 
 var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
+var blessObject = require('../').blessObject;
+var extendConstructor = require('../').extendConstructor;
 
-var main = require('../');
 function SubPromise(executor) {
   if (typeof executor !== 'function') {
     throw new TypeError();
@@ -18,11 +16,11 @@ function SubPromise(executor) {
     return new SubPromise(executor);
   }
 
-  if (executor !== main.blessObject) {
-    main.blessObject(this, executor, true);
+  if (executor !== blessObject) {
+    blessObject(this, executor, true);
   }
 }
-main.extendConstructor(SubPromise, Promise);
+extendConstructor(SubPromise, Promise);
 
 var slice = [].slice;
 
@@ -295,7 +293,13 @@ describe('Promise#nodeify(callback)', function() {
 });
 
 describe('Promise#cancelAfter(milliseconds)', function() {
-  clock.use();
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('returns the same promise', function() {
     var p = Promise.from(sentinels.foo);

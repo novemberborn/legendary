@@ -1,8 +1,5 @@
 'use strict';
 
-var assert = require('chai').assert;
-var sentinels = require('chai-sentinels');
-
 var TimeoutError = require('../').TimeoutError;
 
 describe('TimeoutError', function() {
