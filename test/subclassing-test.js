@@ -145,7 +145,7 @@ describe('Subclassing', function() {
 
   });
 
-  describe('main.extendObject helper', function() {
+  describe('extendConstructor helper', function() {
     it('sets up inheritance', function() {
       var Extended = extendConstructor(function() {});
       assert.instanceOf(new Extended(), Promise);
