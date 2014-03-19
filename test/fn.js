@@ -2,6 +2,8 @@
 
 var sinon = require('sinon');
 
+var Thenable = require('./support/Thenable');
+
 var Promise = require('../').Promise;
 var fn = require('../').fn;
 var concurrent = require('../').concurrent;
@@ -203,15 +205,11 @@ describe('fn.compose()', function() {
     it('assimilates thenables', function() {
       var composed = fn.compose(
         function() {
-          return {
-            then: function(resolve) { resolve(sentinels.foo); }
-          };
+          return new Thenable(function(resolve) { resolve(sentinels.foo); });
         },
         function(prevResult) {
           assert.strictEqual(prevResult, sentinels.foo);
-          return {
-            then: function(resolve) { resolve(sentinels.bar); }
-          };
+          return new Thenable(function(resolve) { resolve(sentinels.bar); });
         }
       );
 

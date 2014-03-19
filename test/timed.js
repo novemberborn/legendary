@@ -2,6 +2,8 @@
 
 var sinon = require('sinon');
 
+var Thenable = require('./support/Thenable');
+
 var Promise = require('../').Promise;
 var timed = require('../').timed;
 var TimeoutError = require('../').TimeoutError;
@@ -89,18 +91,12 @@ describe('timed.delay(milliseconds, x)', function() {
   });
 
   it('resolves after input thenable plus delay', function(done) {
-    var resolveInput;
-    var input = {
-      then: function(resolve) {
-        resolveInput = resolve;
-      }
-    };
-
-    var delayed = timed.delay(50, input);
+    var thenable = Thenable.defer();
+    var delayed = timed.delay(50, thenable.it);
     assertPending(delayed);
 
     clock.tick(50);
-    resolveInput(sentinels.foo);
+    thenable.resolve(sentinels.foo);
 
     process.nextTick(function() {
       assertPending(delayed);
@@ -114,11 +110,9 @@ describe('timed.delay(milliseconds, x)', function() {
   });
 
   it('does not delay if input thenable is rejected', function() {
-    var result = timed.delay(50, {
-      then: function(resolve, reject) {
-        reject(sentinels.foo);
-      }
-    });
+    var result = timed.delay(50, new Thenable(function(resolve, reject) {
+      reject(sentinels.foo);
+    }));
     return assert.isRejected(result, sentinels.Sentinel);
   });
 });
@@ -143,7 +137,7 @@ describe('timed.timeout(milliseconds, x)', function() {
   });
 
   it('rejects after a timeout of a thenable', function() {
-    var p = timed.timeout(50, { then: function() {} });
+    var p = timed.timeout(50, Thenable.defer().it);
     clock.tick(50);
     return assert.isRejected(p, TimeoutError);
   });
@@ -176,11 +170,9 @@ describe('timed.timeout(milliseconds, x)', function() {
 
   it('does not time out when passed thenable that fulfills in time',
     function() {
-      var p = timed.timeout(100, {
-        then: function(resolve) {
-          setTimeout(resolve, 50, sentinels.foo);
-        }
-      });
+      var p = timed.timeout(100, new Thenable(function(resolve) {
+        setTimeout(resolve, 50, sentinels.foo);
+      }));
       clock.tick(50);
       return assert.eventually.matchingSentinels(p, sentinels.foo);
     });
@@ -194,11 +186,9 @@ describe('timed.timeout(milliseconds, x)', function() {
   });
 
   it('does not time out when passed thenable that rejects in time', function() {
-    var p = timed.timeout(100, {
-      then: function(_, reject) {
-        setTimeout(reject, 50, sentinels.foo);
-      }
-    });
+    var p = timed.timeout(100, new Thenable(function(_, reject) {
+      setTimeout(reject, 50, sentinels.foo);
+    }));
     clock.tick(50);
     return assert.isRejected(p, sentinels.Sentinel);
   });

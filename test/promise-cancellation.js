@@ -2,6 +2,8 @@
 
 var sinon = require('sinon');
 
+var Thenable = require('./support/Thenable');
+
 var Promise = require('../').Promise;
 var CancellationError = require('../').CancellationError;
 
@@ -146,30 +148,30 @@ describe('Cancellation', function() {
 
     describe('assimilating thenables, upon cancellation', function() {
       it('ignores assimilation when returned in promise chain', function() {
-        var resolveThenable;
-        var derived = Promise.from().then(constant({
-          then: function(resolvePromise) { resolveThenable = resolvePromise; }
-        })).then(identity);
+        var thenable = Thenable.defer();
+        var assimilationSpy = sinon.spy(thenable.it, 'then');
+
+        var derived = Promise.from().then(
+          constant(thenable.it)
+        ).then(identity);
         return Promise.from().then(function() {
-          assert(resolveThenable);
+          assert.calledOnce(assimilationSpy);
           derived.cancel();
-          resolveThenable('thenable result');
+          thenable.resolve('thenable result');
           return assertCancelled(derived);
         });
       });
 
       it('ignores assimilation when resolved directly', function() {
-        var resolveThenable;
+        var thenable = Thenable.defer();
+        var assimilationSpy = sinon.spy(thenable.it, 'then');
+
         var outer = new Promise(function(resolve) {
-          resolve({
-            then: function(resolvePromise) {
-              resolveThenable = resolvePromise;
-            }
-          });
+          resolve(thenable.it);
         });
-        assert(resolveThenable);
+        assert.calledOnce(assimilationSpy);
         outer.cancel();
-        resolveThenable('thenable result');
+        thenable.resolve('thenable result');
         return assertCancelled(outer);
       });
     });

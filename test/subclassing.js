@@ -1,5 +1,7 @@
 'use strict';
 
+var Thenable = require('./support/Thenable');
+
 var Promise = require('../').Promise;
 var blessObject = require('../').blessObject;
 var extendConstructor = require('../').extendConstructor;
@@ -80,7 +82,7 @@ describe('Subclassing', function() {
           // a new promise. That last promise must still be of the same
           // subclass.
           var chain = dfd.promise.then(function() {
-            return { then: function() {} };
+            return Thenable.defer().it;
           }).then(identity);
           assert.instanceOf(chain, SubPromise);
         });
