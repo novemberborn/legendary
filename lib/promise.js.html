@@ -435,6 +435,130 @@ array, or an object with fewer keys than <code>input</code>.</p>
       <div class="segment">
       
         <div class="comments ">
+          <div class="wrapper"><h3 id="promise-denodeify-func-callbacknotdeclared-"><a href="#promise-denodeify-func-callbacknotdeclared-" class="anchor"></a>Promise.denodeify(func, callbackNotDeclared)</h3><p>Wraps a function that takes a Node-style callback, returning the wrapper
+function. Normalizes <code>func</code>s behavior in case it throws synchronously or
+invokes it callback synchronously or inconsistently.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The wrapper function will return a new promise. If <code>func</code> throws, the
+returned promise will be rejected with that error as the rejection reason. If
+<code>func</code> invokes its callback with a truey error argument, the returned promise
+will be rejected with that error as the rejection reason.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>func</code> invokes its callback with a falsey error argument, and no other
+arguments, the returned promise will be fulfilled with <code>undefined</code>.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>func</code> invokes its callback with a falsey error argument, and one other
+argument, the returned promise will be fulfilled with the second argument
+value.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>If <code>func</code> invokes its callback with a falsey error argument, and multiple
+arguments, the returned promise will be fulfilled with an array of argument
+values (excluding the first error argument).</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>Subsequent invocations of the callback are ignored.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p><code>func</code> is applied to the <code>thisArg</code> of the wrapped function invocation. It&#39;ll
+be invoked with the other arguments that are passed. These arguments are used
+as-is.</p>
+</div>
+        </div>
+      
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
+          <div class="wrapper"><p>The wrapper will provide a callback function as the last argument, based on
+<code>func</code>s arity. If <code>func</code> does not actually declare a callback argument, but
+uses <code>arguments</code> array to find the last argument, call <code>Promise.denodeify()</code>
+with <code>callbackNotDeclared</code> set to <code>true</code>.</p>
+</div>
+        </div>
+      
+      
+        <div class="code"><div class="wrapper">Promise.denodeify = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(func, callbackNotDeclared)</span> {</span>
+  <span class="hljs-keyword">var</span> Constructor = <span class="hljs-keyword">this</span>;
+  <span class="hljs-keyword">var</span> arity = func.length;
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> {</span>
+    <span class="hljs-keyword">var</span> thisArg = <span class="hljs-keyword">this</span>;
+    <span class="hljs-keyword">var</span> args = slice.call(<span class="hljs-built_in">arguments</span>);
+
+    <span class="hljs-keyword">if</span> (callbackNotDeclared === <span class="hljs-literal">true</span>) {
+      arity = args.length + <span class="hljs-number">1</span>;
+    }
+    <span class="hljs-built_in">arguments</span>.length = arity;
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Constructor(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(resolve, reject)</span> {</span>
+      args[arity - <span class="hljs-number">1</span>] = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(err, value)</span> {</span>
+        <span class="hljs-keyword">if</span> (err) {
+          reject(err);
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">arguments</span>.length &gt; <span class="hljs-number">2</span>) {
+          resolve(slice.call(<span class="hljs-built_in">arguments</span>, <span class="hljs-number">1</span>));
+        } <span class="hljs-keyword">else</span> {
+          resolve(value);
+        }
+      };
+
+      func.apply(thisArg, args);
+    });
+  };
+};
+</div></div>
+      
+      </div>
+    
+      <div class="segment">
+      
+        <div class="comments ">
           <div class="wrapper"><h2 id="promise-then-onfulfilled-onrejected-"><a href="#promise-then-onfulfilled-onrejected-" class="anchor"></a>Promise#then(onFulfilled, onRejected)</h2><p><code>then</code> method according to <a href="http://promisesaplus.com/">Promises/A+</a>.</p>
 </div>
         </div>

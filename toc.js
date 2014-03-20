@@ -147,6 +147,11 @@ window.files = [
       "title": "Promise.join(...input)"
     },
     {
+      "level": 3,
+      "slug": "promise-denodeify-func-callbacknotdeclared-",
+      "title": "Promise.denodeify(func, callbackNotDeclared)"
+    },
+    {
       "level": 2,
       "slug": "promise-then-onfulfilled-onrejected-",
       "title": "Promise#then(onFulfilled, onRejected)"
