@@ -1,22 +1,43 @@
 {
   "name": "legendary",
   "version": "0.16.0",
-  "description": "Dabbling with promises. It’ll be legendary",
-  "homepage": "https://github.com/novemberborn/legendary",
-  "bugs": {
-    "url": "https://github.com/novemberborn/legendary/issues"
+  "description": "Legendary is a Promises/A+ compatible promise implementation. It combines promise subclassing with sugar inspired by when.js, Q and async.",
+  "main": "lib/main.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "jshint --reporter node_modules/jshint-stylish/stylish.js .",
+    "doc": "grock",
+    "doc-publish": "grock --github"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/novemberborn/legendary"
+  },
+  "keywords": [
+    "promise",
+    "promises",
+    "Promises/A+",
+    "promises-aplus",
+    "deferred",
+    "deferreds",
+    "when",
+    "future",
+    "async",
+    "asynchronous",
+    "functional",
+    "flow control"
+  ],
   "author": {
     "name": "Mark Wubben",
     "url": "http://novemberborn.net"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/novemberborn/legendary.git"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/novemberborn/legendary/issues"
   },
-  "main": "lib/main.js",
+  "homepage": "https://github.com/novemberborn/legendary",
   "devDependencies": {
-    "chai": "1.8.1",
+    "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
     "glob": "^3.2.9",
     "mocha": "^1.18.2",
@@ -26,12 +47,6 @@
     "jshint-stylish": "^0.1.5",
     "jshint": "^2.4.4",
     "chai-sentinels": "^1.0.0"
-  },
-  "scripts": {
-    "test": "mocha",
-    "lint": "jshint --reporter node_modules/jshint-stylish/stylish.js .",
-    "doc": "grock",
-    "doc-publish": "grock --github"
   },
   "engines": {
     "node": ">=0.10.0"
