@@ -163,6 +163,7 @@ describe('Subclassing', function() {
       assert.strictEqual(Extended.any, Promise.any);
       assert.strictEqual(Extended.some, Promise.some);
       assert.strictEqual(Extended.join, Promise.join);
+      assert.strictEqual(Extended.denodeify, Promise.denodeify);
     });
 
     it('sets up an `isInstance()` helper', function() {
