@@ -76,6 +76,68 @@ describe('Promise.join(...args)', function() {
   });
 });
 
+describe('Promise.denodeify(func, callbackNotDeclared)', function() {
+  it('returns a function', function() {
+    assert.isFunction(Promise.denodeify(function() {}));
+  });
+
+  describe('the returned function', function() {
+    it('results in a Promise', function() {
+      assert.instanceOf(Promise.denodeify(function() {})(), Promise);
+    });
+
+    it('returns a promise of the same subclass', function() {
+      assert.instanceOf(SubPromise.denodeify(function() {})(), SubPromise);
+    });
+
+    it('invokes original method', function() {
+      var spy = sinon.spy(function(arg1, arg2, cb) {
+        /*jshint unused:false*/
+      });
+      var wrapped = Promise.denodeify(spy);
+      wrapped.call(sentinels.foo, sentinels.bar, sentinels.baz);
+
+      assert.calledOnce(spy);
+      assert.calledOn(spy, sentinels.foo);
+      assert.calledWithMatch(spy,
+        sinon.match.same(sentinels.bar),
+        sinon.match.same(sentinels.baz),
+        sinon.match.func);
+    });
+
+    it('rejects if the callback is invoked with truthy error', function() {
+      return assert.isRejected(
+        Promise.denodeify(function(cb) { cb(sentinels.foo); })(),
+        sentinels.Sentinel);
+    });
+
+    it('resolves if the callback is invoked with a falsy error', function() {
+      return assert.eventually.matchingSentinels(
+        Promise.denodeify(function(cb) { cb(null, sentinels.foo); })(),
+        sentinels.foo);
+    });
+
+    it('resolves with an array if the callback is invoked with a falsy error ' +
+      'and multiple values',
+      function() {
+        var arr = sentinels.stubArray();
+        return assert.eventually.matchingSentinels(
+          Promise.denodeify(function(cb) {
+            cb.apply(null, [null].concat(arr));
+          })(),
+          arr);
+      });
+  });
+
+  it('correctly wraps functions that don’t declare their callback argument',
+      function() {
+        function func(v) { arguments[arguments.length - 1](null, v); }
+        return assert.eventually.matchingSentinels(
+          Promise.denodeify(func, true)(sentinels.foo),
+          sentinels.foo);
+      });
+});
+
 describe('Promise#yield(value)', function() {
   resultsInCorrectSubclass('yield');
 
