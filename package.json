@@ -1,6 +1,6 @@
 {
   "name": "legendary",
-  "version": "0.16.0",
+  "version": "1.0.0",
   "description": "Legendary is a Promises/A+ compatible promise implementation. It combines promise subclassing with sugar inspired by when.js, Q and async.",
   "main": "lib/main.js",
   "scripts": {
