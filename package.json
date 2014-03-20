@@ -31,6 +31,7 @@
     "name": "Mark Wubben",
     "url": "http://novemberborn.net"
   },
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/novemberborn/legendary/issues"
   },
