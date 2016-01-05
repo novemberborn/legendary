@@ -4,6 +4,10 @@
 
 Legendary is a [Promises/A+](http://promises-aplus.github.com/promises-spec) compatible promise implementation. It combines promise subclassing with sugar inspired by [when.js](https://github.com/cujojs/when), [Q](https://github.com/kriskowal/q) and [async](https://github.com/caolan/async).
 
+## Deprecation Notice
+
+This module is no longer maintained. It still has some neat ideas though.
+
 ## Installation
 
 ```js
