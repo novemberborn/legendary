@@ -13,6 +13,11 @@ window.files = [
     },
     {
       "level": 2,
+      "slug": "deprecation-notice",
+      "title": "Deprecation Notice"
+    },
+    {
+      "level": 2,
       "slug": "installation",
       "title": "Installation"
     },
